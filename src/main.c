@@ -87,7 +87,7 @@ int main(void)
 
 	  delayApproxOneSecond();
 	  gpioLed1SetOn();
-	  //gpioLed0SetOn();
+//	  gpioLed0SetOn();
 
   }
 }
