@@ -1,10 +1,16 @@
-/*******************************************************
+/************************************************************************
  *	Assignment 2 - Managing Energy Modes
  *	Author: Mohit Rane
+ *	Submission Date: January 30th, 2019
  *
- *	LED blinking
+ *	LED blinking using LETIMER
+ *	
+ *	To change LED on time or period:
+ *	Go to letimer.h and change "PERIOD_MS" and "ONTIME_MS" as required.
  *
- *******************************************************/
+ *	To change the sleep state of CPU:
+ *	Go to configSLEEP.h and change "EnergyMode" as required.
+ ************************************************************************/
 
 /* Board headers */
 #include "init_mcu.h"
@@ -85,23 +91,21 @@ int main(void)
 
 	/* Infinite loop */
 	while (1) {
+		#if (EnergyMode == 0)
+		#endif
 
-#if (EnergyMode == 0)
-#endif
+		#if (EnergyMode == 1)
+			SLEEP_SleepBlockBegin(sleepEM2);
+			SLEEP_Sleep();
+		#endif
 
-#if (EnergyMode == 1)
-	SLEEP_SleepBlockBegin(sleepEM2);
-	SLEEP_Sleep();
-#endif
+		#if (EnergyMode == 2)
+			SLEEP_SleepBlockBegin(sleepEM3);
+			SLEEP_Sleep();
+		#endif
 
-#if (EnergyMode == 2)
-	SLEEP_SleepBlockBegin(sleepEM3);
-	SLEEP_Sleep();
-#endif
-
-#if (EnergyMode == 3)
-	EMU_EnterEM3(true);
-#endif
-
+		#if (EnergyMode == 3)
+			EMU_EnterEM3(true);
+		#endif
  	}
 }
