@@ -62,22 +62,22 @@ LED measurement - Period
 LED measurement - LED on time   
 ![em3_led_ledOnTime][em3_led_ledOnTime]  
 
-[em0_avg_current_period]: https://drive.google.com/open?id=1b-r5wJJiBYn2p7tJCzTzOLz4biYvPqAf "em0_avg_current_period"
-[em0_avg_current_ledoff]: https://drive.google.com/open?id=14kcMjScrrUeIZbcogQSUsOxxgE8WtpST "em0_avg_current_ledoff"
-[em0_avg_current_ledon]: https://drive.google.com/open?id=1VHW4srHw2I3V52-Htwy6lWBk0ggRNgjn "em0_avg_current_ledon"
+[em0_avg_current_period]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM0/em0_avg_current_period.JPG "em0_avg_current_period"
+[em0_avg_current_ledoff]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM0/em0_avg_current_ledoff.JPG "em0_avg_current_ledoff"
+[em0_avg_current_ledon]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM0/em0_avg_current_ledon.JPG "em0_avg_current_ledon"
 
-[em1_avg_current_period]: put-your-link-to-screenshot-image-here "em1_avg_current_period"
-[em1_avg_current_ledoff]: put-your-link-to-screenshot-image-here "em1_avg_current_ledoff"
-[em1_avg_current_ledon]: put-your-link-to-screenshot-image-here "em1_avg_current_ledon"
+[em1_avg_current_period]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM1/em1_avg_current_period.JPG "em1_avg_current_period"
+[em1_avg_current_ledoff]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM1/em1_avg_current_ledoff.JPG "em1_avg_current_ledoff"
+[em1_avg_current_ledon]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM1/em1_avg_current_ledon.JPG "em1_avg_current_ledon"
 
-[em2_avg_current_period]: put-your-link-to-screenshot-image-here "em2_avg_current_period"
-[em2_avg_current_ledoff]: put-your-link-to-screenshot-image-here "em2_avg_current_ledoff"
-[em2_avg_current_ledon]: put-your-link-to-screenshot-image-here "em2_avg_current_ledon"
-[em2_led_period]: put-your-link-to-screenshot-image-here "em2_led_period"
-[em2_led_ledOnTime]: put-your-link-to-screenshot-image-here "em2_led_ledOnTime"
+[em2_avg_current_period]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM2/em2_avg_current_period.JPG "em2_avg_current_period"
+[em2_avg_current_ledoff]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM2/em2_avg_current_ledoff.JPG "em2_avg_current_ledoff"
+[em2_avg_current_ledon]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM2/em2_avg_current_ledon%20-%20Copy.JPG "em2_avg_current_ledon"
+[em2_led_period]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM2/em2_led_period.JPG "em2_led_period"
+[em2_led_ledOnTime]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM2/em2_led_ledOnTime.JPG "em2_led_ledOnTime"
 
-[em3_avg_current_period]: put-your-link-to-screenshot-image-here "em3_avg_current_period"
-[em3_avg_current_ledoff]: put-your-link-to-screenshot-image-here "em3_avg_current_ledoff"
-[em3_avg_current_ledon]: put-your-link-to-screenshot-image-here "em3_avg_current_ledon"
-[em3_led_period]: put-your-link-to-screenshot-image-here "em3_led_period"
-[em3_led_ledOnTime]: put-your-link-to-screenshot-image-here "em3_led_ledOnTime"
+[em3_avg_current_period]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM3/em3_avg_current_period.JPG "em3_avg_current_period"
+[em3_avg_current_ledoff]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM3/em3_avg_current_ledoff.JPG "em3_avg_current_ledoff"
+[em3_avg_current_ledon]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM3/em3_avg_current_ledon.JPG "em3_avg_current_ledon"
+[em3_led_period]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM3/em3_led_period.JPG "em3_led_period"
+[em3_led_ledOnTime]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM3/em3_led_ledOnTime.JPG "em3_led_ledOnTime"
