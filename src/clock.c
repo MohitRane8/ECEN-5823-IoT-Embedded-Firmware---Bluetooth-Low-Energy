@@ -11,7 +11,7 @@
 
 void initCLOCK(void)
 {
-	/* Clock configurations for EM0, EM1 and EM2 */
+	/* Clock configurations (LFXO) for EM0, EM1 and EM2 */
 	#if ((EnergyMode == 0) | (EnergyMode == 1) | (EnergyMode == 2))
 		/* Enable required oscillator */
 		CMU_OscillatorEnable(cmuOsc_LFXO, true, true);
@@ -23,7 +23,7 @@ void initCLOCK(void)
 		CMU_ClockDivSet(cmuClock_LETIMER0, cmuClkDiv_4);
 	#endif
 
-	/* Clock configurations for EM3 */
+	/* Clock configurations (ULFRCO) for EM3 */
 	#if (EnergyMode == 3)
 		/* Enable required oscillator */
 		CMU_OscillatorEnable(cmuOsc_ULFRCO, true, true);
