@@ -1,5 +1,6 @@
 /*
  * configSLEEP.c
+ *	Sleep configurations
  *
  *  Created on: Jan 30, 2019
  *      Author: Mohit
