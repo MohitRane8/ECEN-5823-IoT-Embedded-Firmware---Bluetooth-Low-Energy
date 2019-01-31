@@ -7,17 +7,17 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
 
 Energy Mode | Period average current (uA) | Average Current with LED off (uA) | Average Current with LED On (uA)
 ------------| ----------------------------|-----------------------------------|-------------------------
-EM0         |           TBD               |           TBD                     |         TBD
-EM1         |           TBD               |           TBD                     |         TBD
-EM2         |           TBD               |           TBD                     |         TBD
-EM3         |           TBD               |           TBD                     |         TBD
+EM0         |           4430              |           4390                    |         4860
+EM1         |           3310              |           3270                    |         3740
+EM2         |           45.75             |           4.85                    |         488.11
+EM3         |           44.13             |           4.32                    |         485.56
 
 **2. Fill in the below chart based on time measured period and LED on time measurements for EM2 and EM3 modes, replacing each TBD with measured values.  Use the [Selecting Ranges](https://www.silabs.com/documents/public/user-guides/ug343-multinode-energy-profiler.pdf) feature of the profiler to select the appropriate measurement range.  When measuring time, measure from peak current to peak current.  Your LED on time measurement should be accurate to 1ms and your period measurement should be accurate to within 10ms**
 
 Energy Mode | Period (ms)| LED On Time (ms) |
 ------------| -----------|-------------------
-EM2         |   TBD      |        TBD
-EM3         |   TBD      |        TBD
+EM2         |   2250     |        174
+EM3         |   2230     |        176
 
 
 **3. ScreenShots**  
@@ -62,9 +62,9 @@ LED measurement - Period
 LED measurement - LED on time   
 ![em3_led_ledOnTime][em3_led_ledOnTime]  
 
-[em0_avg_current_period]: screenshots/em0_avg_current_period.jpg "em0_avg_current_period"
-[em0_avg_current_ledoff]: screenshots/em0_avg_current_ledoff.jpg "em0_avg_current_ledoff"
-[em0_avg_current_ledon]: put-your-link-to-screenshot-image-here "em0_avg_current_ledon"
+[em0_avg_current_period]: https://drive.google.com/open?id=1b-r5wJJiBYn2p7tJCzTzOLz4biYvPqAf "em0_avg_current_period"
+[em0_avg_current_ledoff]: https://drive.google.com/open?id=14kcMjScrrUeIZbcogQSUsOxxgE8WtpST "em0_avg_current_ledoff"
+[em0_avg_current_ledon]: https://drive.google.com/open?id=1VHW4srHw2I3V52-Htwy6lWBk0ggRNgjn "em0_avg_current_ledon"
 
 [em1_avg_current_period]: put-your-link-to-screenshot-image-here "em1_avg_current_period"
 [em1_avg_current_ledoff]: put-your-link-to-screenshot-image-here "em1_avg_current_ledoff"
