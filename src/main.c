@@ -1,3 +1,11 @@
+/*******************************************************
+ *	Assignment 2 - Managing Energy Modes
+ *	Author: Mohit Rane
+ *
+ *	LED blinking
+ *
+ *******************************************************/
+
 /* Board headers */
 #include "init_mcu.h"
 #include "init_board.h"
@@ -30,6 +38,10 @@
 #define MAX_CONNECTIONS 4
 #endif
 
+/* Libraries required by this assignment */
+#include "letimer.h"
+#include "configSLEEP.h"
+
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 
 // Gecko configuration parameters (see gecko_configuration.h)
@@ -50,44 +62,46 @@ static const gecko_configuration_t config = {
 #endif // (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
 };
 
-static void delayApproxOneSecond(void)
-{
-	/**
-	 * Wait loops are a bad idea in general!  Don't copy this code in future assignments!
-	 * We'll discuss how to do this a better way in the next assignment.
-	 */
-	volatile int i;
-	for (i = 0; i < 3500000; ) {
-		  i=i+1;
-	}
-}
-
-
 int main(void)
 {
-  // Initialize device
-  initMcu();
-  // Initialize board
-  initBoard();
-  // Initialize application
-  initApp();
+	// Initialize device
+	initMcu();
+	// Initialize board
+	initBoard();
+	// Initialize application
+	initApp();
 
-  gpioInit();
+	// Initialize stack
+	gecko_init(&config);
 
-  // Initialize stack
-  gecko_init(&config);
+	// Configure sleep
+	configSLEEP();
 
-  /* Infinite loop */
-  while (1) {
-	  delayApproxOneSecond();
-	  gpioLed0SetOff();
+	// Initialize GPIO
+	gpioInit();
 
-	  delayApproxOneSecond();
-	  gpioLed1SetOff();
+	// Initialize LETIMER
+	initLETIMER();
 
-	  delayApproxOneSecond();
-	  gpioLed1SetOn();
-//	  gpioLed0SetOn();
+	/* Infinite loop */
+	while (1) {
 
-  }
+#if (EnergyMode == 0)
+#endif
+
+#if (EnergyMode == 1)
+	SLEEP_SleepBlockBegin(sleepEM2);
+	SLEEP_Sleep();
+#endif
+
+#if (EnergyMode == 2)
+	SLEEP_SleepBlockBegin(sleepEM3);
+	SLEEP_Sleep();
+#endif
+
+#if (EnergyMode == 3)
+	EMU_EnterEM3(true);
+#endif
+
+ 	}
 }
