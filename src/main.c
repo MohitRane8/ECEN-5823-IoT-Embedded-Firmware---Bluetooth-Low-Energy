@@ -2,6 +2,10 @@
  *	Assignment 3 - I2C Load Power Management
  *	Author: Mohit Rane
  *	Submission Date: February 6th, 2019
+ *
+ *	In this assignment, we measure the temperature every 3 seconds
+ *	using the inbuilt temperature sensor over I2C. The period is
+ *	controlled by the LETIMER.
  ************************************************************************/
 
 /* Board headers */
@@ -43,10 +47,6 @@
 #include "configSLEEP.h"
 #include "i2c.h"
 
-void timerWaitUs(uint32_t us_wait);
-
-extern bool eventFlag;
-
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 
 // Gecko configuration parameters (see gecko_configuration.h)
@@ -66,6 +66,12 @@ static const gecko_configuration_t config = {
   .pa.input = GECKO_RADIO_PA_INPUT_VBAT, // Configure PA input to VBAT
 #endif // (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
 };
+
+/* Declaring an event flag to run schedule for temperature measurement */
+extern bool eventFlag;
+
+/* Function declration */
+void timerWaitUs(uint32_t us_wait);
 
 int main(void)
 {
@@ -94,9 +100,6 @@ int main(void)
 	// Initialize I2C
 	initI2CSPM();
 
-	// Make the code sleep in EM2
-//	SLEEP_SleepBlockBegin(sleepEM3);
-
 	/* Infinite loop */
 	while (1)
 	{
@@ -120,17 +123,16 @@ int main(void)
 		}
 		else
 		{
-			// Start sleep
-//			SLEEP_Sleep();
+			/* Enter the deepest possible sleep mode */
 			EMU_EnterEM3(true);
 		}
  	}
 }
 
 
-/***********************************************
+/****************************************************
  *	Delay Generation Function in microseconds
- **********************************************/
+ ****************************************************/
 void timerWaitUs(uint32_t us_wait)
 {
 	// Calculating the number of ticks required
