@@ -1,5 +1,6 @@
 /*
  * i2c.h
+ * Header file required for i2c.c
  *
  *  Created on: Feb 6, 2019
  *      Author: Mohit
@@ -12,8 +13,13 @@
 #include "log.h"
 #include "em_i2c.h"
 
+/* Receive buffer to store the temperature data from I2C */
 uint8_t i2c_rxBuffer;
+
+/* Stores raw temperature data */
 uint16_t tempData;
+
+/* Stores the temperature data in celcius */
 uint16_t celsTemp;
 
 I2C_TransferReturn_TypeDef status;
