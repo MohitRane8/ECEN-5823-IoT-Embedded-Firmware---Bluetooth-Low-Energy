@@ -8,6 +8,10 @@
 #include "letimer.h"
 #include "configSLEEP.h"
 
+/* 
+ * A flag to set an event in the schedule.
+ * The schedule will activate the I2C and take temperature readings.
+*/
 bool eventFlag;
 
 /**************************************
@@ -22,31 +26,17 @@ void initLETIMER(void)
 	LETIMER_Init_TypeDef letimerInit = LETIMER_INIT_DEFAULT;
 	letimerInit.comp0Top = true;		//To let LETIMER start counting from COMP0 value
 	LETIMER_Init(LETIMER0, &letimerInit);
-
-	/* Calculating period and ontime count for EM0, EM1 and EM2 */
-	#if ((EnergyMode == 0) | (EnergyMode == 1) | (EnergyMode == 2))
-		/* Setting value of COMP0 - counting will start from this value */
-//		uint32_t periodCount = PERIOD_MS * 8.192;
-		/* Setting value of COMP1 - where interrupt will occur and LED will turn ON */
-//		uint32_t ontimeCount = ONTIME_MS * 8.192;
-	#endif
 	
 	/* Calculating period and ontime count for EM3 */
 	#if (EnergyMode == 3)
 		/* Setting value of COMP0 - counting will start from this value */
 		uint32_t periodCount = PERIOD_MS;
-		/* Setting value of COMP1 - where interrupt will occur and LED will turn ON */
-//		uint32_t ontimeCount = ONTIME_MS;
 	#endif
 
 	/* Setting value of COMP0 - counting will start from this value */
-	LETIMER_CompareSet(LETIMER0, 0, 49152);	//49152
+	LETIMER_CompareSet(LETIMER0, 0, 49152);
 
-	/* Setting value of COMP1 - where interrupt will occur and LED will turn ON */
-//	LETIMER_CompareSet(LETIMER0, 1, ontimeCount);
-
-	/* Enabling the interrupt flags */
-//	LETIMER_IntEnable(LETIMER0, LETIMER_IEN_COMP1);
+	/* Enabling the Underflow interrupt flag */
 	LETIMER_IntEnable(LETIMER0, LETIMER_IEN_UF);
 
 	/* Enabling LETIMER0 in NVIC */
@@ -66,7 +56,7 @@ void LETIMER0_IRQHandler(void)
 	uint32_t reason = LETIMER_IntGet(LETIMER0);
 
 	/* Setting the event flag */
-	if((reason & LETIMER_IF_UF) /*== LETIMER_IF_UF*/)	// set by UF flag
+	if(reason & LETIMER_IF_UF)
 		eventFlag = true;
 
 	/* Clearing pending interrupts */
