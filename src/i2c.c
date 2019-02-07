@@ -1,5 +1,7 @@
 /*
  * i2c.c
+ * This file contains the code for the appropriate initialization parameters required for I2CSPM.
+ * It also records the temperature data in Celcius.
  *
  *  Created on: Feb 6, 2019
  *      Author: Mohit Rane
@@ -26,7 +28,8 @@ void initI2CSPM(void)
 
 	// SDA Port Location
 	i2cspmInit.portLocationSda = 16;
-
+	
+	// I2CSPM initialization
 	I2CSPM_Init(&i2cspmInit);
 }
 
@@ -44,6 +47,7 @@ void performI2CTransfer(void)
 	/* Initializing I2C transfer */
 	status = I2CSPM_Transfer(I2C0, &writeSeq);
 
+	/* Logging errors if present */
 	if(status == i2cTransferDone)
 	{
 		LOG_INFO("Transfer SUCCESS");
@@ -64,6 +68,7 @@ void performI2CTransfer(void)
 	/* Initializing I2C transfer */
 	status = I2CSPM_Transfer(I2C0, &readSeq);
 
+	/* Logging errors if present */
 	if(status == i2cTransferDone)
 	{
 		LOG_INFO("Transfer SUCCESS");
@@ -73,8 +78,13 @@ void performI2CTransfer(void)
 		LOG_INFO("Error %d", status);
 	}
 
+	/* Storing the tempearture data read */
 	tempData |= (i2c_rxBuffer << 8);
 	tempData |= (i2c_rxBuffer);
+	
+	/* Converting raw temperature data in Celcius */
 	celsTemp = ((175.72 * tempData / 65536) - 46.85);
+	
+	/* Logging temperature data */
 	LOG_INFO("%ld", celsTemp);
 }
