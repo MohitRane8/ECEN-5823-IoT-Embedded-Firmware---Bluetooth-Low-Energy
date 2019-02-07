@@ -1,5 +1,6 @@
 /*
  * letimer.h
+ * Header file required for letimer.c
  *
  *  Created on: Jan 29, 2019
  *      Author: Mohit
@@ -13,9 +14,8 @@
 #include "gpio.h"
 #include "clock.h"
 
-// define period and LED on time in milli-seconds
+/* Setting time period for temperature measurement */
 #define PERIOD_MS 3000
-//#define ONTIME_MS 175
 
 void initLETIMER(void);
 void LETIMER0_IRQHandler(void);
