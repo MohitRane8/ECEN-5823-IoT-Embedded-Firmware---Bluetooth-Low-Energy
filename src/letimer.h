@@ -14,8 +14,8 @@
 #include "clock.h"
 
 // define period and LED on time in milli-seconds
-#define PERIOD_MS 2250
-#define ONTIME_MS 175
+#define PERIOD_MS 3000
+//#define ONTIME_MS 175
 
 void initLETIMER(void);
 void LETIMER0_IRQHandler(void);

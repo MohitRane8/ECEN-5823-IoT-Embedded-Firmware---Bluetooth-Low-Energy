@@ -20,7 +20,7 @@ void initCLOCK(void)
 		CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_LFXO);
 
 		/* Prescalar of 4 for maximum period of 8 seconds in LETIMER0 */
-		CMU_ClockDivSet(cmuClock_LETIMER0, cmuClkDiv_4);
+		CMU_ClockDivSet(cmuClock_LETIMER0, cmuClkDiv_2);
 	#endif
 
 	/* Clock configurations (ULFRCO) for EM3 */

@@ -1,15 +1,7 @@
 /************************************************************************
- *	Assignment 2 - Managing Energy Modes
+ *	Assignment 3 - I2C Load Power Management
  *	Author: Mohit Rane
- *	Submission Date: January 30th, 2019
- *
- *	LED blinking using LETIMER
- *	
- *	To change LED on time or period:
- *	Go to letimer.h and change "PERIOD_MS" and "ONTIME_MS" as required.
- *
- *	To change the sleep state of CPU:
- *	Go to configSLEEP.h and change "EnergyMode" as required.
+ *	Submission Date: February 6th, 2019
  ************************************************************************/
 
 /* Board headers */
@@ -27,6 +19,7 @@
 /* Libraries containing default Gecko configuration values */
 #include "em_emu.h"
 #include "em_cmu.h"
+#include "em_core.h"
 
 /* Device initialization header */
 #include "hal-config.h"
@@ -45,8 +38,14 @@
 #endif
 
 /* Libraries required by this assignment */
+#include "log.h"
 #include "letimer.h"
 #include "configSLEEP.h"
+#include "i2c.h"
+
+void timerWaitUs(uint32_t us_wait);
+
+extern bool eventFlag;
 
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 
@@ -77,10 +76,13 @@ int main(void)
 	// Initialize application
 	initApp();
 
+	// Log initialization
+	logInit();
+
 	// Initialize stack
 	gecko_init(&config);
 
-	// Configure sleep
+	// Configure Sleep
 	configSLEEP();
 
 	// Initialize GPIO
@@ -89,23 +91,58 @@ int main(void)
 	// Initialize LETIMER
 	initLETIMER();
 
+	// Initialize I2C
+	initI2CSPM();
+
+	// Make the code sleep in EM2
+//	SLEEP_SleepBlockBegin(sleepEM3);
+
 	/* Infinite loop */
-	while (1) {
-		#if (EnergyMode == 0)
-		#endif
+	while (1)
+	{
+		if (eventFlag == 1)
+		{
+			/* Load Power Management */
+			//Enable temperature sensor
+			GPIO_PinModeSet(gpioPortD, 15, gpioModePushPull, 1);
 
-		#if (EnergyMode == 1)
-			SLEEP_SleepBlockBegin(sleepEM2);
-			SLEEP_Sleep();
-		#endif
+			// Adding delay of 80 microseconds
+			timerWaitUs(80000);
 
-		#if (EnergyMode == 2)
-			SLEEP_SleepBlockBegin(sleepEM3);
-			SLEEP_Sleep();
-		#endif
+			// Start of I2C transfer
+			performI2CTransfer();
 
-		#if (EnergyMode == 3)
+			// Disable temperature sensor
+			GPIO_PinModeSet(gpioPortD, 15, gpioModePushPull, 0);
+
+			// Reseting the scheduler flag
+			eventFlag = 0;
+		}
+		else
+		{
+			// Start sleep
+//			SLEEP_Sleep();
 			EMU_EnterEM3(true);
-		#endif
+		}
  	}
+}
+
+
+/***********************************************
+ *	Delay Generation Function in microseconds
+ **********************************************/
+void timerWaitUs(uint32_t us_wait)
+{
+	// Calculating the number of ticks required
+	uint32_t ticks = us_wait/61.03515;
+
+	// Getting the current timer CNT value
+	uint32_t cntValue = LETIMER_CounterGet(LETIMER0);
+
+	cntValue -= ticks;
+	if(cntValue<0)
+		cntValue = 49152 + cntValue;
+
+	// Waiting till the timer gets to the required value
+	while(cntValue != LETIMER_CounterGet(LETIMER0));
 }
