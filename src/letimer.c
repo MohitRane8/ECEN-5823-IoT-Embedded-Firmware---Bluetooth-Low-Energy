@@ -27,10 +27,10 @@ void initLETIMER(void)
 	letimerInit.comp0Top = true;		//To let LETIMER start counting from COMP0 value
 	LETIMER_Init(LETIMER0, &letimerInit);
 	
-	/* Calculating period and ontime count for EM3 */
-	#if (EnergyMode == 3)
-		/* Setting value of COMP0 - counting will start from this value */
-		uint32_t periodCount = PERIOD_MS;
+	/* Calculating period for EM3 */
+	#if (ENERGYMODE == 3)
+	/* Setting value of COMP0 - counting will start from this value */
+	uint32_t periodCount = PERIOD_MS;
 	#endif
 
 	/* Setting value of COMP0 - counting will start from this value */
