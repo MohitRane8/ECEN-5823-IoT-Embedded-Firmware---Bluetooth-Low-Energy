@@ -12,7 +12,7 @@
 void initCLOCK(void)
 {
 	/* Clock configurations (LFXO) for EM0, EM1 and EM2 */
-	#if ((EnergyMode == 0) | (EnergyMode == 1) | (EnergyMode == 2))
+	#if ((ENERGYMODE == 0) | (ENERGYMODE == 1) | (ENERGYMODE == 2))
 		/* Enable required oscillator */
 		CMU_OscillatorEnable(cmuOsc_LFXO, true, true);
 
@@ -24,7 +24,7 @@ void initCLOCK(void)
 	#endif
 
 	/* Clock configurations (ULFRCO) for EM3 */
-	#if (EnergyMode == 3)
+	#if (ENERGYMODE == 3)
 		/* Enable required oscillator */
 		CMU_OscillatorEnable(cmuOsc_ULFRCO, true, true);
 
