@@ -6,18 +6,18 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
 *Please include screenshots of the profiler window detailing each current measurement captured.  See [Shared document](https://docs.google.com/document/d/1Ro9G2Nsr_ZXDhBYJ6YyF9CPivb--6UjhHRmVhDGySag/edit?usp=sharing) for instructions.* 
 
 1. What is the average current per period?   
-   Answer:
+   Answer: 126.09 uA
    <br>Screenshot:  
-   ![Avg_current_per_period](screenshots/sampleimage.jpg)  
+   ![Avg_current_per_period](https://github.com/CU-ECEN-5823/assignment-3-i2c-load-power-management-MohitRane8/blob/master/screenshots/assignment-3/Avg_current_per_period.JPG)  
 2. What is the average current when the Si7021 is Load Power Management OFF?  
-   Answer:
+   Answer: 2.77 uA
    <br>Screenshot:  
-   ![Avg_current_lpmOFF](link-to-screenshot-image)
+   ![Avg_current_lpmOFF](https://github.com/CU-ECEN-5823/assignment-3-i2c-load-power-management-MohitRane8/blob/master/screenshots/assignment-3/Avg_current_lpmOFF.JPG)
 3. What is the average current when the Si7021 is Load Power Management ON?  
-   Answer:
+   Answer: 3.59 mA
    <br>Screenshot:  
-   ![Avg_current_lpmON](link-to-screenshot-image)
+   ![Avg_current_lpmON](https://github.com/CU-ECEN-5823/assignment-3-i2c-load-power-management-MohitRane8/blob/master/screenshots/assignment-3/Avg_current_lpmON.JPG)
 4. How long is the Si7021 Load Power Management ON for 1 temperature reading?  
-   Answer:
+   Answer: 90 ms
    <br>Screenshot:  
-   ![Time_lpmON](link-to-screenshot-image)
+   ![Time_lpmON](https://github.com/CU-ECEN-5823/assignment-3-i2c-load-power-management-MohitRane8/blob/master/screenshots/assignment-3/Time_lpmON.JPG)
