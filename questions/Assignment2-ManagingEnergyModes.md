@@ -15,9 +15,10 @@ EM3         |           44.13             |           4.32                    | 
 **2. Fill in the below chart based on time measured period and LED on time measurements for EM2 and EM3 modes, replacing each TBD with measured values.  Use the [Selecting Ranges](https://www.silabs.com/documents/public/user-guides/ug343-multinode-energy-profiler.pdf) feature of the profiler to select the appropriate measurement range.  When measuring time, measure from peak current to peak current.  Your LED on time measurement should be accurate to 1ms and your period measurement should be accurate to within 10ms**
 
 Energy Mode | Period (ms)| LED On Time (ms) |
-------------| -----------|-------------------
+
 EM2         |   2250     |        174
 EM3         |   2230     |        176
+
 
 
 **3. ScreenShots**  
@@ -62,6 +63,7 @@ LED measurement - Period
 LED measurement - LED on time   
 ![em3_led_ledOnTime][em3_led_ledOnTime]  
 
+
 [em0_avg_current_period]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM0/em0_avg_current_period.JPG "em0_avg_current_period"
 [em0_avg_current_ledoff]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM0/em0_avg_current_ledoff.JPG "em0_avg_current_ledoff"
 [em0_avg_current_ledon]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM0/em0_avg_current_ledon.JPG "em0_avg_current_ledon"
@@ -81,3 +83,4 @@ LED measurement - LED on time
 [em3_avg_current_ledon]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM3/em3_avg_current_ledon.JPG "em3_avg_current_ledon"
 [em3_led_period]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM3/em3_led_period.JPG "em3_led_period"
 [em3_led_ledOnTime]: https://github.com/CU-ECEN-5823/managing-energy-modes-MohitRane8/blob/master/screenshots/assignment-2/EM3/em3_led_ledOnTime.JPG "em3_led_ledOnTime"
+
