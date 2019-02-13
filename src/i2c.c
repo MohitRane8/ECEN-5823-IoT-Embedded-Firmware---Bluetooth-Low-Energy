@@ -9,6 +9,8 @@
 
 #include "i2c.h"
 
+uint8_t i2c_rxBuffer[2] = {0};
+
 // Command for temperature sensor module to measure temperature
 uint8_t si7021_Command = 0xE3;
 
@@ -16,21 +18,11 @@ uint8_t si7021_Command = 0xE3;
 void initI2CSPM(void)
 {
 	I2CSPM_Init_TypeDef i2cspmInit = I2CSPM_INIT_DEFAULT;
-
-	// SCL Pin
-	i2cspmInit.sclPin = 10;
-
-	// SDA Pin
-	i2cspmInit.sdaPin = 11;
-
-	// SCL Port Location
-	i2cspmInit.portLocationScl = 14;
-
-	// SDA Port Location
-	i2cspmInit.portLocationSda = 16;
 	
 	// I2CSPM initialization
 	I2CSPM_Init(&i2cspmInit);
+
+	GPIO_PinModeSet(gpioPortD, 15, gpioModePushPull, 0);
 }
 
 /* Actual I2C transfer */
@@ -54,7 +46,8 @@ void performI2CTransfer(void)
 	}
 	else
 	{
-		LOG_INFO("Error %d", status);
+		LOG_INFO("Write Error %d", status);
+		//return;
 	}
 
 	/* Transfer structure */
@@ -62,7 +55,7 @@ void performI2CTransfer(void)
 
 	readSeq.addr          = (0x40 << 1);
 	readSeq.flags         = I2C_FLAG_READ;
-	readSeq.buf[0].data   = &i2c_rxBuffer;
+	readSeq.buf[0].data   = i2c_rxBuffer;
 	readSeq.buf[0].len    = 2;
 
 	/* Initializing I2C transfer */
@@ -75,12 +68,12 @@ void performI2CTransfer(void)
 	}
 	else
 	{
-		LOG_INFO("Error %d", status);
+		LOG_INFO("Read Error %d", status);
 	}
 
 	/* Storing the tempearture data read */
-	tempData |= (i2c_rxBuffer << 8);
-	tempData |= (i2c_rxBuffer);
+	tempData = (((uint16_t)i2c_rxBuffer[0]) << 8);
+	tempData |= (i2c_rxBuffer[1]);
 	
 	/* Converting raw temperature data in Celcius */
 	celsTemp = ((175.72 * tempData / 65536) - 46.85);

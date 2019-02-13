@@ -94,11 +94,11 @@ int main(void)
 	// Initialize GPIO
 	gpioInit();
 
-	// Initialize LETIMER
-	initLETIMER();
-
 	// Initialize I2C
 	initI2CSPM();
+
+	// Initialize LETIMER
+	initLETIMER();
 
 	/* Infinite loop */
 	while (1)
@@ -107,16 +107,17 @@ int main(void)
 		{
 			/* Load Power Management */
 			//Enable temperature sensor
-			GPIO_PinModeSet(gpioPortD, 15, gpioModePushPull, 1);
+			GPIO_PinOutSet(gpioPortD, 15);
 
 			// Adding delay of 80 microseconds
+			timerWaitUs(80000);
 			timerWaitUs(80000);
 
 			// Start of I2C transfer
 			performI2CTransfer();
 
 			// Disable temperature sensor
-			GPIO_PinModeSet(gpioPortD, 15, gpioModePushPull, 0);
+			GPIO_PinOutClear(gpioPortD, 15);
 
 			// Reseting the scheduler flag
 			eventFlag = 0;
@@ -129,10 +130,11 @@ int main(void)
  	}
 }
 
-
+// TO BE IMPLEMENTED WITH INTERRUPT
 /****************************************************
  *	Delay Generation Function in microseconds
  ****************************************************/
+/*
 void timerWaitUs(uint32_t us_wait)
 {
 	// Calculating the number of ticks required
@@ -148,3 +150,4 @@ void timerWaitUs(uint32_t us_wait)
 	// Waiting till the timer gets to the required value
 	while(cntValue != LETIMER_CounterGet(LETIMER0));
 }
+*/

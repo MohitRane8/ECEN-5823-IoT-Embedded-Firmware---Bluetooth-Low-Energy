@@ -14,7 +14,6 @@
 #include "em_i2c.h"
 
 /* Receive buffer to store the temperature data from I2C */
-uint8_t i2c_rxBuffer;
 
 /* Stores raw temperature data */
 uint16_t tempData;
