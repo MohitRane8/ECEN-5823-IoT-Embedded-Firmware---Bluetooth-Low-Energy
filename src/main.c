@@ -46,6 +46,7 @@
 #include "letimer.h"
 #include "configSLEEP.h"
 #include "i2c.h"
+#include "event.h"
 
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 
@@ -67,18 +68,34 @@ static const gecko_configuration_t config = {
 #endif // (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
 };
 
-/* Declaring an event flag to run schedule for temperature measurement */
-extern bool eventFlag;
 
-/* Function declration */
-void timerWaitUs(uint32_t us_wait);
+/* Initialization of structure for temperature events */
+extern struct tempEvents TEMP_EVENT = {0};
+
+/* Defining states for state machine */
+enum temp_sensor_state {
+	TEMP_SENSOR_POWER_OFF,
+	TEMP_SENSOR_WAIT_FOR_POWER_UP,
+	TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE,
+	TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE,
+	TEMP_SENSOR_I2C_ERROR = -1
+};
+
+/* Defining the initial state */
+enum temp_sensor_state current_state = TEMP_SENSOR_POWER_OFF;
+enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
+
+//extern double rollover = 0;
+//float timestamp = 0;
 
 int main(void)
 {
 	// Initialize device
 	initMcu();
+
 	// Initialize board
 	initBoard();
+
 	// Initialize application
 	initApp();
 
@@ -95,59 +112,144 @@ int main(void)
 	gpioInit();
 
 	// Initialize I2C
-	initI2CSPM();
+	initI2C();
 
 	// Initialize LETIMER
 	initLETIMER();
 
 	/* Infinite loop */
-	while (1)
+	while(1)
 	{
-		if (eventFlag == 1)
-		{
-			/* Load Power Management */
-			//Enable temperature sensor
-			GPIO_PinOutSet(gpioPortD, 15);
+		/* Assignment 4 code */
+		EMU_EnterEM3(true);
 
-			// Adding delay of 80 microseconds
-			timerWaitUs(80000);
-			timerWaitUs(80000);
+		/* Scheduler */
+		switch(current_state){
+			/* Power Off state */
+			case TEMP_SENSOR_POWER_OFF:
+				if(TEMP_EVENT.UF_flag){
+					TEMP_EVENT.UF_flag = false;
 
-			// Start of I2C transfer
-			performI2CTransfer();
+					// Enable temperature sensor
+					GPIO_PinOutSet(gpioPortD, 15);
 
-			// Disable temperature sensor
-			GPIO_PinOutClear(gpioPortD, 15);
+					// Setting the timer for the gpio pin
+					timerSetEventInUs(80000);
 
-			// Reseting the scheduler flag
-			eventFlag = 0;
+					next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
+
+				}
+				else{
+//					loggerGetTimestamp();
+					LOG_INFO("Error");
+				}
+				break;
+
+			/* Wait for Power Up state */
+			case TEMP_SENSOR_WAIT_FOR_POWER_UP:
+				if(TEMP_EVENT.COMP1_flag){
+					TEMP_EVENT.COMP1_flag = false;
+
+					// sleep block begin
+					SLEEP_SleepBlockBegin(sleepEM2);
+
+					//i2c transfer init for write
+					tempSensorStartI2CWrite();
+//					timeWaitUs(15000);
+//					timerSetEventInUs(15000);
+
+					next_state = TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE;
+				}
+				break;
+
+			/* Wait for I2C Read Complete state */
+			case TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE:
+//				if(TEMP_EVENT.COMP1_flag){
+//					TEMP_EVENT.COMP1_flag = false;
+
+					if(TEMP_EVENT.I2CTransactionDone){
+						TEMP_EVENT.I2CTransactionDone = false;
+
+						tempSensorStartI2CRead();
+						next_state = TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE;
+					}
+//				}
+
+				if(TEMP_EVENT.I2CTransactionError){
+					TEMP_EVENT.I2CTransactionError = false;
+					next_state = TEMP_SENSOR_I2C_ERROR;
+				}
+				break;
+
+			/* Wait for I2C Read Complete state */
+			case TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE:
+				if(TEMP_EVENT.I2CTransactionDone){
+					TEMP_EVENT.I2CTransactionDone = false;
+
+					// sleep block end
+					SLEEP_SleepBlockEnd(sleepEM2);
+
+					//displayTemperature
+					tempConv();
+
+					//power off sensor
+					GPIO_PinOutClear(gpioPortD, 15);
+
+					NVIC_DisableIRQ(I2C0_IRQn);
+
+					next_state = TEMP_SENSOR_POWER_OFF;
+				}
+
+				if(TEMP_EVENT.I2CTransactionError){
+					TEMP_EVENT.I2CTransactionError = false;
+					next_state = TEMP_SENSOR_I2C_ERROR;
+				}
+				break;
+
+			/* Error state */
+			case TEMP_SENSOR_I2C_ERROR:
+//				loggerGetTimestamp();
+				LOG_INFO("ERROR\n");
+				//i2c bus reset - scl pin 9 times toggle
+				//count_fail++
+				next_state = TEMP_SENSOR_POWER_OFF;
 		}
-		else
-		{
-			/* Enter the deepest possible sleep mode */
-			EMU_EnterEM3(true);
+
+		if(current_state != next_state){
+//			loggerGetTimestamp();
+			LOG_INFO("Temp sensor transitioned from state %d to state %d\n", current_state, next_state);
+			current_state = next_state;
+			if(current_state == TEMP_SENSOR_I2C_ERROR) continue;
 		}
  	}
 }
 
-// TO BE IMPLEMENTED WITH INTERRUPT
-/****************************************************
- *	Delay Generation Function in microseconds
- ****************************************************/
-/*
-void timerWaitUs(uint32_t us_wait)
-{
-	// Calculating the number of ticks required
-	uint32_t ticks = us_wait/61.03515;
 
-	// Getting the current timer CNT value
-	uint32_t cntValue = LETIMER_CounterGet(LETIMER0);
+//void loggerGetTimestamp(void)
+//{
+//	// Getting the current timer CNT value
+//	uint32_t cntValue = LETIMER_CounterGet(LETIMER0);
+//
+//	timestamp = (rollover*3)+((49152 - cntValue)*61.03);
+//	LOG_INFO("%lf sec", timestamp);
+//}
 
-	cntValue -= ticks;
-	if(cntValue<0)
-		cntValue = 49152 + cntValue;
 
-	// Waiting till the timer gets to the required value
-	while(cntValue != LETIMER_CounterGet(LETIMER0));
-}
-*/
+///****************************************************
+// *	Delay Generation Function in microseconds
+// ****************************************************/
+//void timeWaitUs(uint32_t us_wait)
+//{
+//	// Calculating the number of ticks required
+//	uint32_t ticks = us_wait/61.03515;
+//
+//	// Getting the current timer CNT value
+//	uint32_t cntValue = LETIMER_CounterGet(LETIMER0);
+//
+//	cntValue -= ticks;
+//	if(cntValue<0)
+//		cntValue = 49152 + cntValue;
+//
+//	// Waiting till the timer gets to the required value
+//	while(cntValue != LETIMER_CounterGet(LETIMER0));
+//}

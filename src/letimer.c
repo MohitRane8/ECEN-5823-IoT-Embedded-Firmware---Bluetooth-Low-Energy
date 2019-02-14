@@ -8,11 +8,10 @@
 #include "letimer.h"
 #include "configSLEEP.h"
 
-/* 
- * A flag to set an event in the schedule.
- * The schedule will activate the I2C and take temperature readings.
-*/
-bool eventFlag;
+//double rollover;
+
+/* Initialization of structure for temperature events */
+struct tempEvents TEMP_EVENT;
 
 /**************************************
  *	LETIMER0 Initialization
@@ -40,6 +39,30 @@ void initLETIMER(void)
 	LETIMER_Enable(LETIMER0, true);
 }
 
+
+/****************************************************
+ *	Delay Generation Function in microseconds
+ ****************************************************/
+void timerSetEventInUs(uint32_t us_wait)
+{
+	// Calculating the number of ticks required
+	uint32_t ticks = us_wait/61.03515;
+
+	// Getting the current timer CNT value
+	uint32_t cntValue = LETIMER_CounterGet(LETIMER0);
+
+	cntValue -= ticks;
+	if(cntValue<0)
+		cntValue = 49152 + cntValue;
+
+	// Waiting till the timer gets to the required value
+//	while(cntValue != LETIMER_CounterGet(LETIMER0));
+
+	LETIMER_CompareSet(LETIMER0, 1, cntValue);
+	LETIMER_IntEnable(LETIMER0, LETIMER_IEN_COMP1);
+}
+
+
 /**************************************
  *	LETIMER0 Interrupt Handling
  **************************************/
@@ -51,7 +74,13 @@ void LETIMER0_IRQHandler(void)
 
 	/* Setting the event flag */
 	if(reason & LETIMER_IF_UF)
-		eventFlag = true;
+	{
+		TEMP_EVENT.UF_flag = true;
+//		rollover++;
+	}
+
+	else if(reason & LETIMER_IF_COMP1)
+		TEMP_EVENT.COMP1_flag = true;
 
 	/* Clearing pending interrupts */
 	LETIMER_IntClear(LETIMER0, reason);
