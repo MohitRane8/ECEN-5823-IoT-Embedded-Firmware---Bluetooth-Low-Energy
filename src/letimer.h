@@ -13,10 +13,13 @@
 #include "em_letimer.h"
 #include "gpio.h"
 #include "clock.h"
+#include "log.h"
 #include "event.h"
 
 /* Setting time period for temperature measurement */
 #define PERIOD_MS 3000
+
+uint8_t rollover;
 
 void initLETIMER(void);
 void LETIMER0_IRQHandler(void);

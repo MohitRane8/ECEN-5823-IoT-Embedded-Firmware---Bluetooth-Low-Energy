@@ -26,7 +26,11 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
    ![duration_lpm_on](screenshots/assignment4/avg_current_lpm_on.jpg)  
 
 5. What is the total operating time of your design for assignment 4 in hours assuming a 1000mAh supply?
+Ans: Average current = 4.55uA
+     Total operating time of my design is 183.15 hrs.
 
 6. How has the power consumption performance of your design changed since the previous assignment?
+Ans: The power consumption has reduced. The reason behind this is sleeping in EM3 mode for most of the time.
 
 7. Describe how you have tested your code to ensure you are sleeping in EM1 mode during I2C transfers.
+Ans: I am using SleepBlockBegin and SleepBlockEnd to block the operation going into EM2 and further.

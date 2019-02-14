@@ -79,6 +79,7 @@ void LETIMER0_IRQHandler(void)
 	if(reason & LETIMER_IF_UF)
 	{
 		TEMP_EVENT.UF_flag = true;
+		rollover++;
 	}
 
 	else if(reason & LETIMER_IF_COMP1)
