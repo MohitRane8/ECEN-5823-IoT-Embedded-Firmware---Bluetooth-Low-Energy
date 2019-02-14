@@ -6,22 +6,22 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
 *Please include screenshots of the profiler window detailing each current measurement captured.  See [Shared document](https://docs.google.com/document/d/1Ro9G2Nsr_ZXDhBYJ6YyF9CPivb--6UjhHRmVhDGySag/edit?usp=sharing) for instructions.* 
 
 1. What is the average current per period?
-   Answer:
+   Answer: 4.55 uA
    <br>Screenshot:  
    ![Avg_current_per_period](https://github.com/CU-ECEN-5823/assignment4-lpm-part2-MohitRane8/blob/master/screenshots/assignment-4/Avg_current_per_period.JPG)  
 
 2. What is the average current when the Si7021 is Load Power Management OFF?
-   Answer:
+   Answer: 3.94 uA
    <br>Screenshot:  
    ![Avg_current_LPM_Off](https://github.com/CU-ECEN-5823/assignment4-lpm-part2-MohitRane8/blob/master/screenshots/assignment-4/Avg_current_LPM_Off.JPG)  
 
 3. What is the average current when the Si7021 is Load Power Management ON?
-   Answer:
+   Answer: 26.22 uA
    <br>Screenshot:  
    ![Avg_current_LPM_Off](https://github.com/CU-ECEN-5823/assignment4-lpm-part2-MohitRane8/blob/master/screenshots/assignment-4/Avg_current_LPM_On.JPG)  
 
 4. How long is the Si7021 Load Power Management ON for 1 temperature reading?
-   Answer:
+   Answer: 80 ms
    <br>Screenshot:  
    ![duration_lpm_on](https://github.com/CU-ECEN-5823/assignment4-lpm-part2-MohitRane8/blob/master/screenshots/assignment-4/duration_lpm_on.JPG)  
    

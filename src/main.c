@@ -205,8 +205,8 @@ int main(void)
 		}
 
 		if(current_state != next_state){
-//			timestamp = loggerGetTimestamp();
-//			LOG_INFO("%d: ", timestamp);
+			timestamp = loggerGetTimestamp();
+			LOG_INFO("%d: ", timestamp);
 			LOG_INFO("Temp sensor transitioned from state %d to state %d\n", current_state, next_state);
 			current_state = next_state;
 			if(current_state == TEMP_SENSOR_I2C_ERROR) continue;
