@@ -8,22 +8,23 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
 1. What is the average current per period?
    Answer:
    <br>Screenshot:  
-   ![Avg_current_per_period](screenshots/assignment4/avg_current_per_period.jpg)  
+   ![Avg_current_per_period](https://github.com/CU-ECEN-5823/assignment4-lpm-part2-MohitRane8/blob/master/screenshots/assignment-4/Avg_current_per_period.JPG)  
 
 2. What is the average current when the Si7021 is Load Power Management OFF?
    Answer:
    <br>Screenshot:  
-   ![Avg_current_LPM_Off](screenshots/assignment4/avg_current_lpm_off.jpg)  
+   ![Avg_current_LPM_Off](https://github.com/CU-ECEN-5823/assignment4-lpm-part2-MohitRane8/blob/master/screenshots/assignment-4/Avg_current_LPM_Off.JPG)  
 
 3. What is the average current when the Si7021 is Load Power Management ON?
    Answer:
    <br>Screenshot:  
-   ![Avg_current_LPM_Off](screenshots/assignment4/avg_current_lpm_on.jpg)  
+   ![Avg_current_LPM_Off](https://github.com/CU-ECEN-5823/assignment4-lpm-part2-MohitRane8/blob/master/screenshots/assignment-4/Avg_current_LPM_On.JPG)  
 
 4. How long is the Si7021 Load Power Management ON for 1 temperature reading?
    Answer:
    <br>Screenshot:  
-   ![duration_lpm_on](screenshots/assignment4/avg_current_lpm_on.jpg)  
+   ![duration_lpm_on](https://github.com/CU-ECEN-5823/assignment4-lpm-part2-MohitRane8/blob/master/screenshots/assignment-4/duration_lpm_on.JPG)  
+   
 
 5. What is the total operating time of your design for assignment 4 in hours assuming a 1000mAh supply?
 Ans: Average current = 4.55uA
