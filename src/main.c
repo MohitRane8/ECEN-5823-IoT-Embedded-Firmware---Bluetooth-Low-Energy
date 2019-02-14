@@ -85,9 +85,6 @@ enum temp_sensor_state {
 enum temp_sensor_state current_state = TEMP_SENSOR_POWER_OFF;
 enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
 
-//extern double rollover = 0;
-//float timestamp = 0;
-
 int main(void)
 {
 	// Initialize device
@@ -140,7 +137,6 @@ int main(void)
 
 				}
 				else{
-//					loggerGetTimestamp();
 					LOG_INFO("Error");
 				}
 				break;
@@ -155,25 +151,20 @@ int main(void)
 
 					//i2c transfer init for write
 					tempSensorStartI2CWrite();
-//					timeWaitUs(15000);
-//					timerSetEventInUs(15000);
 
 					next_state = TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE;
 				}
 				break;
 
-			/* Wait for I2C Read Complete state */
+			/* Wait for I2C Write Complete state */
 			case TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE:
-//				if(TEMP_EVENT.COMP1_flag){
-//					TEMP_EVENT.COMP1_flag = false;
 
-					if(TEMP_EVENT.I2CTransactionDone){
-						TEMP_EVENT.I2CTransactionDone = false;
+				if(TEMP_EVENT.I2CTransactionDone){
+					TEMP_EVENT.I2CTransactionDone = false;
 
-						tempSensorStartI2CRead();
-						next_state = TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE;
-					}
-//				}
+					tempSensorStartI2CRead();
+					next_state = TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE;
+				}
 
 				if(TEMP_EVENT.I2CTransactionError){
 					TEMP_EVENT.I2CTransactionError = false;
@@ -194,9 +185,6 @@ int main(void)
 
 					//power off sensor
 					GPIO_PinOutClear(gpioPortD, 15);
-
-					NVIC_DisableIRQ(I2C0_IRQn);
-
 					next_state = TEMP_SENSOR_POWER_OFF;
 				}
 
@@ -208,48 +196,14 @@ int main(void)
 
 			/* Error state */
 			case TEMP_SENSOR_I2C_ERROR:
-//				loggerGetTimestamp();
 				LOG_INFO("ERROR\n");
-				//i2c bus reset - scl pin 9 times toggle
-				//count_fail++
 				next_state = TEMP_SENSOR_POWER_OFF;
 		}
 
 		if(current_state != next_state){
-//			loggerGetTimestamp();
 			LOG_INFO("Temp sensor transitioned from state %d to state %d\n", current_state, next_state);
 			current_state = next_state;
 			if(current_state == TEMP_SENSOR_I2C_ERROR) continue;
 		}
  	}
 }
-
-
-//void loggerGetTimestamp(void)
-//{
-//	// Getting the current timer CNT value
-//	uint32_t cntValue = LETIMER_CounterGet(LETIMER0);
-//
-//	timestamp = (rollover*3)+((49152 - cntValue)*61.03);
-//	LOG_INFO("%lf sec", timestamp);
-//}
-
-
-///****************************************************
-// *	Delay Generation Function in microseconds
-// ****************************************************/
-//void timeWaitUs(uint32_t us_wait)
-//{
-//	// Calculating the number of ticks required
-//	uint32_t ticks = us_wait/61.03515;
-//
-//	// Getting the current timer CNT value
-//	uint32_t cntValue = LETIMER_CounterGet(LETIMER0);
-//
-//	cntValue -= ticks;
-//	if(cntValue<0)
-//		cntValue = 49152 + cntValue;
-//
-//	// Waiting till the timer gets to the required value
-//	while(cntValue != LETIMER_CounterGet(LETIMER0));
-//}

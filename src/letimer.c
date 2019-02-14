@@ -10,6 +10,9 @@
 
 //double rollover;
 
+/* Initial event */
+//enum g_event event;
+
 /* Initialization of structure for temperature events */
 struct tempEvents TEMP_EVENT;
 
@@ -76,11 +79,12 @@ void LETIMER0_IRQHandler(void)
 	if(reason & LETIMER_IF_UF)
 	{
 		TEMP_EVENT.UF_flag = true;
-//		rollover++;
 	}
 
 	else if(reason & LETIMER_IF_COMP1)
+	{
 		TEMP_EVENT.COMP1_flag = true;
+	}
 
 	/* Clearing pending interrupts */
 	LETIMER_IntClear(LETIMER0, reason);

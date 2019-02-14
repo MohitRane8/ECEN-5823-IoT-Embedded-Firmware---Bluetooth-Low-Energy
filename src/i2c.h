@@ -14,6 +14,7 @@
 #include "event.h"
 #include "em_gpio.h"
 #include "i2cspm.h"
+#include "configSLEEP.h"
 
 /* Stores raw temperature data */
 uint16_t tempData;
@@ -22,6 +23,8 @@ uint16_t tempData;
 uint16_t celsTemp;
 
 I2C_TransferReturn_TypeDef status;
+I2C_TransferSeq_TypeDef readSeq;
+I2C_TransferSeq_TypeDef writeSeq;
 
 void initI2C(void);
 void tempSensorStartI2CWrite(void);

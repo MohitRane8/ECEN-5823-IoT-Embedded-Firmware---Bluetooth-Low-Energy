@@ -16,6 +16,7 @@ struct tempEvents{
 	bool COMP1_flag;
 	bool I2CTransactionDone;
 	bool I2CTransactionError;
+	bool NoEvent;
 };
 
 #endif /* SRC_EVENT_H_ */

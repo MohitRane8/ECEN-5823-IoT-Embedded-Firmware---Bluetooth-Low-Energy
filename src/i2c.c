@@ -15,15 +15,14 @@ struct tempEvents TEMP_EVENT;
 /* Receive buffer to store the temperature data from I2C */
 uint8_t i2c_rxBuffer[2] = {0};
 
-// Command for temperature sensor module to measure temperature
+/* Command for temperature sensor module to measure temperature */
 uint8_t si7021_Command = 0xE3;
 
-/* Initialization of I2C */
+/**************************************
+ *	I2C0 initialization
+ **************************************/
 void initI2C(void)
 {
-//	I2C_Init_TypeDef i2cInit = I2C_INIT_DEFAULT;
-//	I2C_Init(I2C0, &i2cInit);
-
 	I2CSPM_Init_TypeDef i2cspmInit = I2CSPM_INIT_DEFAULT;
 
 	// I2CSPM initialization
@@ -32,45 +31,41 @@ void initI2C(void)
 	/* Setting the temperature sensor */
 	GPIO_PinModeSet(gpioPortD, 15, gpioModePushPull, 0);
 
-	/* Enabling I2C */
-//	I2C_Enable(I2C0, true);
-
+	/* Enabling NVIC interrupts for I2C0 */
+	NVIC_EnableIRQ(I2C0_IRQn);
 }
 
+/**************************************
+ *	Initializes transfer function for write
+ **************************************/
 void tempSensorStartI2CWrite(void)
 {
 	/* Write transfer structure */
-	I2C_TransferSeq_TypeDef writeSeq;
 	writeSeq.addr 			= (0x40 << 1);
 	writeSeq.flags 			= I2C_FLAG_WRITE;
 	writeSeq.buf[0].data 	= &si7021_Command;
 	writeSeq.buf[0].len 	= 1;
 
-	/* Enabling NVIC interrupts for I2C0 */
-	NVIC_EnableIRQ(I2C0_IRQn);
-
 	I2C_TransferReturn_TypeDef ret = I2C_TransferInit(I2C0, &writeSeq);
-	if (ret == i2cTransferDone){
-
-	}
-	if (ret == i2cTransferInProgress){
-
-		}
 }
 
+/**************************************
+ *	Initializes transfer function for read
+ **************************************/
 void tempSensorStartI2CRead(void)
 {
 	/* Read transfer structure */
-	I2C_TransferSeq_TypeDef readSeq;
 	readSeq.addr 			= (0x40 << 1);
 	readSeq.flags 			= I2C_FLAG_READ;
 	readSeq.buf[0].data 	= i2c_rxBuffer;
 	readSeq.buf[0].len 		= 2;
 
-	I2C_TransferReturn_TypeDef ret = I2C_TransferInit(I2C0, &readSeq);
+	I2C_TransferInit(I2C0, &readSeq);
 }
 
-/* Actual I2C transfer */
+/**************************************
+ *	Actual I2C transfer
+ **************************************/
 void tempConv(void)
 {
 	/* Storing the temperature data read */
@@ -84,17 +79,23 @@ void tempConv(void)
 	LOG_INFO("Temperature: %ld\n", celsTemp);
 }
 
+/**************************************
+ *	I2C0 Interrupt Handling
+ **************************************/
 void I2C0_IRQHandler(){
-//	__disable_irq();
+	__disable_irq();
 
 	I2C_TransferReturn_TypeDef reason = I2C_Transfer(I2C0);
 
+	/* Successful transfer */
 	if(reason == i2cTransferDone){
 		TEMP_EVENT.I2CTransactionDone = true;
 	}
+
+	/* Transfer failure */
 	else if(reason != i2cTransferInProgress){
 		TEMP_EVENT.I2CTransactionError = true;
 	}
 
-//	__enable_irq();
+	__enable_irq();
 }
