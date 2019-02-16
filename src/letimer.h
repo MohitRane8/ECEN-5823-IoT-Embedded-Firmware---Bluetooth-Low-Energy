@@ -19,6 +19,10 @@
 /* Setting time period for temperature measurement */
 #define PERIOD_MS 3000
 
+/* Ticks that will be loaded in COMP0 as per time period */
+uint32_t periodCount;
+
+/* Variable which increments every time a time period is completed */
 uint8_t rollover;
 
 void initLETIMER(void);

@@ -25,7 +25,7 @@ void initI2C(void)
 {
 	I2CSPM_Init_TypeDef i2cspmInit = I2CSPM_INIT_DEFAULT;
 
-	// I2CSPM initialization
+	/* I2CSPM initialization */
 	I2CSPM_Init(&i2cspmInit);
 
 	/* Setting the temperature sensor */
@@ -46,7 +46,7 @@ void tempSensorStartI2CWrite(void)
 	writeSeq.buf[0].data 	= &si7021_Command;
 	writeSeq.buf[0].len 	= 1;
 
-	I2C_TransferReturn_TypeDef ret = I2C_TransferInit(I2C0, &writeSeq);
+	I2C_TransferInit(I2C0, &writeSeq);
 }
 
 /**************************************
@@ -83,19 +83,21 @@ void tempConv(void)
  *	I2C0 Interrupt Handling
  **************************************/
 void I2C0_IRQHandler(){
-	__disable_irq();
+//	__disable_irq();
 
 	I2C_TransferReturn_TypeDef reason = I2C_Transfer(I2C0);
 
 	/* Successful transfer */
 	if(reason == i2cTransferDone){
 		TEMP_EVENT.I2CTransactionDone = true;
+		TEMP_EVENT.NoEvent = false;
 	}
 
 	/* Transfer failure */
 	else if(reason != i2cTransferInProgress){
 		TEMP_EVENT.I2CTransactionError = true;
+		TEMP_EVENT.NoEvent = false;
 	}
 
-	__enable_irq();
+//	__enable_irq();
 }

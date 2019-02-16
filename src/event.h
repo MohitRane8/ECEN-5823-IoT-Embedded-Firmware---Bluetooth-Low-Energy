@@ -19,4 +19,14 @@ struct tempEvents{
 	bool NoEvent;
 };
 
+//enum g_event{
+//	NoEvent 				= 0,
+//	UF_flag 				= 1,
+//	COMP1_flag 				= 2,
+//	I2CTransactionDone 		= 3,
+//	I2CTransactionError 	= -1
+//};
+
+//enum g_event event;
+
 #endif /* SRC_EVENT_H_ */

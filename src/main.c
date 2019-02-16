@@ -1,7 +1,7 @@
 /************************************************************************
- *	Assignment 3 - I2C Load Power Management
+ *	Assignment 4 - I2C Load Power Management Part 2
  *	Author: Mohit Rane
- *	Submission Date: February 6th, 2019
+ *	Submission Date: February 13th, 2019
  *
  *	In this assignment, we measure the temperature every 3 seconds
  *	using the inbuilt temperature sensor over I2C. The period is
@@ -85,8 +85,6 @@ enum temp_sensor_state {
 enum temp_sensor_state current_state = TEMP_SENSOR_POWER_OFF;
 enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
 
-//uint32_t loggerGetTimestamp(void);
-
 uint32_t timestamp;
 
 int main(void)
@@ -118,18 +116,18 @@ int main(void)
 	// Initialize LETIMER
 	initLETIMER();
 
+//	SLEEP_SleepBlockBegin(ENERGYMODE+1);
+
 	/* Infinite loop */
 	while(1)
 	{
-		/* Assignment 4 code */
-		EMU_EnterEM3(true);
-
 		/* Scheduler */
 		switch(current_state){
 			/* Power Off state */
 			case TEMP_SENSOR_POWER_OFF:
 				if(TEMP_EVENT.UF_flag){
 					TEMP_EVENT.UF_flag = false;
+					TEMP_EVENT.NoEvent = true;
 
 					// Enable temperature sensor
 					GPIO_PinOutSet(gpioPortD, 15);
@@ -149,6 +147,7 @@ int main(void)
 			case TEMP_SENSOR_WAIT_FOR_POWER_UP:
 				if(TEMP_EVENT.COMP1_flag){
 					TEMP_EVENT.COMP1_flag = false;
+					TEMP_EVENT.NoEvent = true;
 
 					// sleep block begin
 					SLEEP_SleepBlockBegin(sleepEM2);
@@ -162,9 +161,9 @@ int main(void)
 
 			/* Wait for I2C Write Complete state */
 			case TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE:
-
 				if(TEMP_EVENT.I2CTransactionDone){
 					TEMP_EVENT.I2CTransactionDone = false;
+					TEMP_EVENT.NoEvent = true;
 
 					tempSensorStartI2CRead();
 					next_state = TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE;
@@ -172,6 +171,11 @@ int main(void)
 
 				if(TEMP_EVENT.I2CTransactionError){
 					TEMP_EVENT.I2CTransactionError = false;
+					TEMP_EVENT.NoEvent = true;
+					// sleep block end
+					SLEEP_SleepBlockEnd(sleepEM2);
+					//power off sensor
+					GPIO_PinOutClear(gpioPortD, 15);
 					next_state = TEMP_SENSOR_I2C_ERROR;
 				}
 				break;
@@ -180,36 +184,43 @@ int main(void)
 			case TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE:
 				if(TEMP_EVENT.I2CTransactionDone){
 					TEMP_EVENT.I2CTransactionDone = false;
-
+					TEMP_EVENT.NoEvent = true;
 					// sleep block end
 					SLEEP_SleepBlockEnd(sleepEM2);
-
-					//displayTemperature
-					tempConv();
-
 					//power off sensor
 					GPIO_PinOutClear(gpioPortD, 15);
+					//displayTemperature
+					tempConv();
 					next_state = TEMP_SENSOR_POWER_OFF;
 				}
 
 				if(TEMP_EVENT.I2CTransactionError){
 					TEMP_EVENT.I2CTransactionError = false;
+					TEMP_EVENT.NoEvent = true;
+					// sleep block end
+					SLEEP_SleepBlockEnd(sleepEM2);
+					//power off sensor
+					GPIO_PinOutClear(gpioPortD, 15);
 					next_state = TEMP_SENSOR_I2C_ERROR;
 				}
 				break;
 
 			/* Error state */
 			case TEMP_SENSOR_I2C_ERROR:
+				TEMP_EVENT.NoEvent = true;
 				LOG_INFO("ERROR\n");
 				next_state = TEMP_SENSOR_POWER_OFF;
 		}
 
+		/* Changing the current state and logging the change */
 		if(current_state != next_state){
-			timestamp = loggerGetTimestamp();
-			LOG_INFO("%d: ", timestamp);
+//			timestamp = loggerGetTimestamp();
+//			LOG_INFO("%d: ", timestamp);
 			LOG_INFO("Temp sensor transitioned from state %d to state %d\n", current_state, next_state);
 			current_state = next_state;
-			if(current_state == TEMP_SENSOR_I2C_ERROR) continue;
 		}
+
+		if(ENERGYMODE > sleepEM0 && TEMP_EVENT.NoEvent == true)
+			SLEEP_Sleep();
  	}
 }
