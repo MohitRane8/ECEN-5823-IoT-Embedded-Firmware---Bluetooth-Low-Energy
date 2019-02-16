@@ -6,6 +6,9 @@
  *	In this assignment, we measure the temperature every 3 seconds
  *	using the inbuilt temperature sensor over I2C. The period is
  *	controlled by the LETIMER.
+ *
+ *	ENERGYMODE parameter defined in configSLEEP.h allows the system to
+ *	sleep in that particular sleep mode.
  ************************************************************************/
 
 /* Board headers */
@@ -116,7 +119,9 @@ int main(void)
 	// Initialize LETIMER
 	initLETIMER();
 
-//	SLEEP_SleepBlockBegin(ENERGYMODE+1);
+#if ((ENERGYMODE == 0) | (ENERGYMODE == 1) | (ENERGYMODE == 2))
+	SLEEP_SleepBlockBegin(ENERGYMODE+1);
+#endif
 
 	/* Infinite loop */
 	while(1)
@@ -214,12 +219,13 @@ int main(void)
 
 		/* Changing the current state and logging the change */
 		if(current_state != next_state){
-//			timestamp = loggerGetTimestamp();
-//			LOG_INFO("%d: ", timestamp);
+			timestamp = loggerGetTimestamp();
+			LOG_INFO("%d: ", timestamp);
 			LOG_INFO("Temp sensor transitioned from state %d to state %d\n", current_state, next_state);
 			current_state = next_state;
 		}
 
+		/* System sleeps when there is no event */
 		if(ENERGYMODE > sleepEM0 && TEMP_EVENT.NoEvent == true)
 			SLEEP_Sleep();
  	}
