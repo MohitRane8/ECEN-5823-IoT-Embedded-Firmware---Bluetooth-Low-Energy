@@ -49,7 +49,8 @@
 #include "letimer.h"
 #include "configSLEEP.h"
 #include "i2c.h"
-#include "event.h"
+//#include "event.h"
+#include "scheduler.h"
 
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 
@@ -72,23 +73,21 @@ static const gecko_configuration_t config = {
 };
 
 
-/* Initialization of structure for temperature events */
-extern struct tempEvents TEMP_EVENT = {0};
-
-/* Defining states for state machine */
-enum temp_sensor_state {
-	TEMP_SENSOR_POWER_OFF,
-	TEMP_SENSOR_WAIT_FOR_POWER_UP,
-	TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE,
-	TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE,
-	TEMP_SENSOR_I2C_ERROR = -1
-};
-
-/* Defining the initial state */
-enum temp_sensor_state current_state = TEMP_SENSOR_POWER_OFF;
-enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
-
-uint32_t timestamp;
+///* Initialization of structure for temperature events */
+//extern struct tempEvents TEMP_EVENT = {0};
+//
+///* Defining states for state machine */
+//enum temp_sensor_state {
+//	TEMP_SENSOR_POWER_OFF,
+//	TEMP_SENSOR_WAIT_FOR_POWER_UP,
+//	TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE,
+//	TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE,
+//	TEMP_SENSOR_I2C_ERROR = -1
+//};
+//
+///* Defining the initial state */
+//enum temp_sensor_state current_state = TEMP_SENSOR_POWER_OFF;
+//enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
 
 int main(void)
 {
@@ -119,6 +118,11 @@ int main(void)
 	// Initialize LETIMER
 	initLETIMER();
 
+	/* Initialize all events to 0 */
+//	TEMP_EVENT = {0};
+
+	TEMP_EVENT.NoEvent = true;
+
 #if ((ENERGYMODE == 0) | (ENERGYMODE == 1) | (ENERGYMODE == 2))
 	SLEEP_SleepBlockBegin(ENERGYMODE+1);
 #endif
@@ -126,107 +130,10 @@ int main(void)
 	/* Infinite loop */
 	while(1)
 	{
-		/* Scheduler */
-		switch(current_state){
-			/* Power Off state */
-			case TEMP_SENSOR_POWER_OFF:
-				if(TEMP_EVENT.UF_flag){
-					TEMP_EVENT.UF_flag = false;
-					TEMP_EVENT.NoEvent = true;
-
-					// Enable temperature sensor
-					GPIO_PinOutSet(gpioPortD, 15);
-
-					// Setting the timer for the gpio pin
-					timerSetEventInUs(80000);
-
-					next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
-
-				}
-				else{
-					LOG_INFO("Error");
-				}
-				break;
-
-			/* Wait for Power Up state */
-			case TEMP_SENSOR_WAIT_FOR_POWER_UP:
-				if(TEMP_EVENT.COMP1_flag){
-					TEMP_EVENT.COMP1_flag = false;
-					TEMP_EVENT.NoEvent = true;
-
-					// sleep block begin
-					SLEEP_SleepBlockBegin(sleepEM2);
-
-					//i2c transfer init for write
-					tempSensorStartI2CWrite();
-
-					next_state = TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE;
-				}
-				break;
-
-			/* Wait for I2C Write Complete state */
-			case TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE:
-				if(TEMP_EVENT.I2CTransactionDone){
-					TEMP_EVENT.I2CTransactionDone = false;
-					TEMP_EVENT.NoEvent = true;
-
-					tempSensorStartI2CRead();
-					next_state = TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE;
-				}
-
-				if(TEMP_EVENT.I2CTransactionError){
-					TEMP_EVENT.I2CTransactionError = false;
-					TEMP_EVENT.NoEvent = true;
-					// sleep block end
-					SLEEP_SleepBlockEnd(sleepEM2);
-					//power off sensor
-					GPIO_PinOutClear(gpioPortD, 15);
-					next_state = TEMP_SENSOR_I2C_ERROR;
-				}
-				break;
-
-			/* Wait for I2C Read Complete state */
-			case TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE:
-				if(TEMP_EVENT.I2CTransactionDone){
-					TEMP_EVENT.I2CTransactionDone = false;
-					TEMP_EVENT.NoEvent = true;
-					// sleep block end
-					SLEEP_SleepBlockEnd(sleepEM2);
-					//power off sensor
-					GPIO_PinOutClear(gpioPortD, 15);
-					//displayTemperature
-					tempConv();
-					next_state = TEMP_SENSOR_POWER_OFF;
-				}
-
-				if(TEMP_EVENT.I2CTransactionError){
-					TEMP_EVENT.I2CTransactionError = false;
-					TEMP_EVENT.NoEvent = true;
-					// sleep block end
-					SLEEP_SleepBlockEnd(sleepEM2);
-					//power off sensor
-					GPIO_PinOutClear(gpioPortD, 15);
-					next_state = TEMP_SENSOR_I2C_ERROR;
-				}
-				break;
-
-			/* Error state */
-			case TEMP_SENSOR_I2C_ERROR:
-				TEMP_EVENT.NoEvent = true;
-				LOG_INFO("ERROR\n");
-				next_state = TEMP_SENSOR_POWER_OFF;
-		}
-
-		/* Changing the current state and logging the change */
-		if(current_state != next_state){
-			timestamp = loggerGetTimestamp();
-			LOG_INFO("%d: ", timestamp);
-			LOG_INFO("Temp sensor transitioned from state %d to state %d\n", current_state, next_state);
-			current_state = next_state;
-		}
-
 		/* System sleeps when there is no event */
 		if(ENERGYMODE > sleepEM0 && TEMP_EVENT.NoEvent == true)
 			SLEEP_Sleep();
+
+		scheduler();
  	}
 }
