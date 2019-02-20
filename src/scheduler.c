@@ -82,7 +82,8 @@ void scheduler(void)
 				//power off sensor
 				GPIO_PinOutClear(gpioPortD, 15);
 				//displayTemperature
-				tempConv();
+				uint8 temp = tempConv();
+				gecko_cmd_gatt_server_send_characteristic_notification(0xff, temperature_measurement, 1, &temp);
 				next_state = TEMP_SENSOR_POWER_OFF;
 			}
 

@@ -66,7 +66,7 @@ void tempSensorStartI2CRead(void)
 /**************************************
  *	Actual I2C transfer
  **************************************/
-void tempConv(void)
+uint8 tempConv(void)
 {
 	/* Storing the temperature data read */
 	tempData = (((uint16_t)i2c_rxBuffer[0]) << 8);
@@ -77,6 +77,8 @@ void tempConv(void)
 	
 	/* Logging temperature data */
 	LOG_INFO("Temperature: %ld\n", celsTemp);
+
+	return celsTemp;
 }
 
 /**************************************
@@ -89,14 +91,18 @@ void I2C0_IRQHandler(){
 
 	/* Successful transfer */
 	if(reason == i2cTransferDone){
-		TEMP_EVENT.I2CTransactionDone = true;
-		TEMP_EVENT.NoEvent = false;
+//		ext_evt_status |= I2C_TRANSACTION_DONE;
+		gecko_external_signal(I2C_TRANSACTION_DONE);
+//		TEMP_EVENT.I2CTransactionDone = true;
+//		TEMP_EVENT.NoEvent = false;
 	}
 
 	/* Transfer failure */
 	else if(reason != i2cTransferInProgress){
-		TEMP_EVENT.I2CTransactionError = true;
-		TEMP_EVENT.NoEvent = false;
+//		ext_evt_status |= I2C_TRANSACTION_ERROR;
+		gecko_external_signal(I2C_TRANSACTION_ERROR);
+//		TEMP_EVENT.I2CTransactionError = true;
+//		TEMP_EVENT.NoEvent = false;
 	}
 
 //	__enable_irq();

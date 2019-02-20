@@ -85,15 +85,19 @@ void LETIMER0_IRQHandler(void)
 	/* Setting the event flag */
 	if(reason & LETIMER_IF_UF)
 	{
-		TEMP_EVENT.UF_flag = true;
-		TEMP_EVENT.NoEvent = false;
+//		ext_evt_status |= UF_FLAG;
+		gecko_external_signal(UF_FLAG);
+//		TEMP_EVENT.UF_flag = true;
+//		TEMP_EVENT.NoEvent = false;
 		rollover++;
 	}
 
 	if(reason & LETIMER_IF_COMP1)
 	{
-		TEMP_EVENT.COMP1_flag = true;
-		TEMP_EVENT.NoEvent = false;
+//		ext_evt_status |= COMP1_FLAG;
+		gecko_external_signal(COMP1_FLAG);
+//		TEMP_EVENT.COMP1_flag = true;
+//		TEMP_EVENT.NoEvent = false;
 		LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1);
 	}
 }

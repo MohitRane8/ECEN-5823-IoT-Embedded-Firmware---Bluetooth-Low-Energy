@@ -26,6 +26,14 @@ struct tempEvents{
 	bool NoEvent;
 } TEMP_EVENT;
 
+//#define NO_EVENT 0x01
+#define UF_FLAG 0x01
+#define COMP1_FLAG 0x02
+#define I2C_TRANSACTION_DONE 0x04
+#define I2C_TRANSACTION_ERROR 0x08
+
+//uint32_t ext_evt_status;
+
 /* Defining states for state machine */
 enum temp_sensor_state {
 	TEMP_SENSOR_POWER_OFF,

@@ -49,8 +49,8 @@
 #include "letimer.h"
 #include "configSLEEP.h"
 #include "i2c.h"
-//#include "event.h"
 #include "scheduler.h"
+#include "gecko_ble_errors.h"
 
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 
@@ -73,21 +73,17 @@ static const gecko_configuration_t config = {
 };
 
 
-///* Initialization of structure for temperature events */
-//extern struct tempEvents TEMP_EVENT = {0};
+extern bool gecko_update(struct gecko_cmd_packer* evt);
+
+//extern bool NoEvent = true;
+
+extern struct gecko_cmd_packet* evt;
+
+//void gecko_ecen5823_update(struct gecko_cmd_packer* evt)
+//{
 //
-///* Defining states for state machine */
-//enum temp_sensor_state {
-//	TEMP_SENSOR_POWER_OFF,
-//	TEMP_SENSOR_WAIT_FOR_POWER_UP,
-//	TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE,
-//	TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE,
-//	TEMP_SENSOR_I2C_ERROR = -1
-//};
-//
-///* Defining the initial state */
-//enum temp_sensor_state current_state = TEMP_SENSOR_POWER_OFF;
-//enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
+//}
+
 
 int main(void)
 {
@@ -130,10 +126,71 @@ int main(void)
 	/* Infinite loop */
 	while(1)
 	{
-		/* System sleeps when there is no event */
-		if(ENERGYMODE > sleepEM0 && TEMP_EVENT.NoEvent == true)
-			SLEEP_Sleep();
+//		if(ENERGYMODE > sleepEM0 && TEMP_EVENT.NoEvent == true)
+//		{
+//			evt = gecko_wait_event();
+//		}
 
-		scheduler();
+		if(ENERGYMODE > sleepEM0)
+		{
+			evt = gecko_wait_event();
+		}
+
+		gecko_update(evt);
+
+		switch BGLIB_MSG_ID(evt->header) {
+			case gecko_evt_system_boot_id:
+
+				/* Set advertising parameters. 100ms advertisement interval.
+				 * The first parameter is advertising set handle
+				 * The next two parameters are minimum and maximum advertising interval, both in
+				 * units of (milliseconds * 1.6).
+				 * The last two parameters are duration and maxevents left as default. */
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_set_advertise_timing(0, 160, 160, 0, 0))
+
+				/* Start general advertising and enable connections. */
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
+				break;
+
+
+			case gecko_evt_le_connection_opened_id:
+				gecko_cmd_le_connection_set_parameters();
+				break;
+
+
+			case gecko_evt_le_connection_closed_id:
+	//			gecko_cmd_gatt_server_write_attribute_value();
+	//			gecko_cmd_gatt_server_send_characteristic_notification();
+				break;
+
+			case gecko_evt_system_external_signal_id:
+				if ((evt->data.evt_system_external_signal.extsignals) & UF_FLAG) {
+					/* Run application specific task */
+					TEMP_EVENT.UF_flag = true;
+					scheduler();
+				}
+				break;
+
+				if ((evt->data.evt_system_external_signal.extsignals) & COMP1_FLAG) {
+					/* Run application specific task */
+					TEMP_EVENT.COMP1_flag = true;
+					scheduler();
+				}
+				break;
+
+				if ((evt->data.evt_system_external_signal.extsignals) & I2C_TRANSACTION_DONE) {
+					/* Run application specific task */
+					TEMP_EVENT.I2CTransactionDone = true;
+					scheduler();
+				}
+				break;
+
+				if ((evt->data.evt_system_external_signal.extsignals) & I2C_TRANSACTION_ERROR) {
+					/* Run application specific task */
+					TEMP_EVENT.I2CTransactionError = true;
+					scheduler();
+				}
+				break;
+		}
  	}
 }
