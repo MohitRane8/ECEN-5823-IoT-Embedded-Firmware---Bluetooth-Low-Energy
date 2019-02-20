@@ -22,9 +22,6 @@ void scheduler(void)
 				TEMP_EVENT.UF_flag = false;
 				TEMP_EVENT.NoEvent = true;
 
-//				uint8_t val = 32;
-//				gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 1, &val);
-
 				// Enable temperature sensor
 				GPIO_PinOutSet(gpioPortD, 15);
 
@@ -85,15 +82,19 @@ void scheduler(void)
 				//power off sensor
 				GPIO_PinOutClear(gpioPortD, 15);
 				//displayTemperature
-				uint8_t temp;
+				uint8_t temp[5];
 				uint8_t *p = temp;
-				UINT8_TO_BITSTREAM(p, 0x00);
-				temp = tempConv();
-//				temp = 32;
-				UINT32_TO_BITSTREAM(p, temp);
+				uint8_t flags = 0x00;   /* HTM flags set as 0 for Celsius, no time stamp and no temperature type. */
+				UINT8_TO_BITSTREAM(p, flags);
+
+				float celtemp;
+				celtemp = tempConv();
+
+				uint32_t tempBit = FLT_TO_UINT32((celtemp*1000), -3);
+				UINT32_TO_BITSTREAM(p, tempBit);
 
 //				gecko_cmd_gatt_server_write_attribute_value(1, &temp);
-				gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 1, p);
+				gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 5, temp);
 				next_state = TEMP_SENSOR_POWER_OFF;
 			}
 

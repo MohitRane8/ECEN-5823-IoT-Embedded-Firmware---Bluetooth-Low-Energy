@@ -67,17 +67,17 @@ void tempSensorStartI2CRead(void)
 /**************************************
  *	Actual I2C transfer
  **************************************/
-uint8_t tempConv(void)
+float tempConv(void)
 {
 	/* Storing the temperature data read */
 	tempData = (((uint16_t)i2c_rxBuffer[0]) << 8);
 	tempData |= (i2c_rxBuffer[1]);
 	
 	/* Converting raw temperature data in Celsius */
-	celsTemp = ((175.72 * tempData / 65536) - 46.85);
+	float celsTemp = ((175.72 * (float)tempData / 65536) - 46.85);
 	
 	/* Logging temperature data */
-	LOG_INFO("Temperature: %ld\n", celsTemp);
+	LOG_INFO("Temperature: %0.2f\n", celsTemp);
 
 	return celsTemp;
 }
