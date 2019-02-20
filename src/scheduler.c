@@ -7,6 +7,7 @@
 
 #include "scheduler.h"
 
+
 /* Defining the initial state */
 enum temp_sensor_state current_state = TEMP_SENSOR_POWER_OFF;
 enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
@@ -21,6 +22,9 @@ void scheduler(void)
 				TEMP_EVENT.UF_flag = false;
 				TEMP_EVENT.NoEvent = true;
 
+//				uint8_t val = 32;
+//				gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 1, &val);
+
 				// Enable temperature sensor
 				GPIO_PinOutSet(gpioPortD, 15);
 
@@ -28,7 +32,6 @@ void scheduler(void)
 				timerSetEventInUs(80000);
 
 				next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
-
 			}
 			else{
 				LOG_INFO("Error");
@@ -82,8 +85,15 @@ void scheduler(void)
 				//power off sensor
 				GPIO_PinOutClear(gpioPortD, 15);
 				//displayTemperature
-				uint8 temp = tempConv();
-				gecko_cmd_gatt_server_send_characteristic_notification(0xff, temperature_measurement, 1, &temp);
+				uint8_t temp;
+				uint8_t *p = temp;
+				UINT8_TO_BITSTREAM(p, 0x00);
+				temp = tempConv();
+//				temp = 32;
+				UINT32_TO_BITSTREAM(p, temp);
+
+//				gecko_cmd_gatt_server_write_attribute_value(1, &temp);
+				gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 1, p);
 				next_state = TEMP_SENSOR_POWER_OFF;
 			}
 

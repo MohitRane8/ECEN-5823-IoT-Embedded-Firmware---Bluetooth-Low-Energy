@@ -9,6 +9,7 @@
 
 #include "i2c.h"
 
+
 /* Structure for temperature events */
 struct tempEvents TEMP_EVENT;
 
@@ -66,7 +67,7 @@ void tempSensorStartI2CRead(void)
 /**************************************
  *	Actual I2C transfer
  **************************************/
-uint8 tempConv(void)
+uint8_t tempConv(void)
 {
 	/* Storing the temperature data read */
 	tempData = (((uint16_t)i2c_rxBuffer[0]) << 8);
@@ -91,16 +92,16 @@ void I2C0_IRQHandler(){
 
 	/* Successful transfer */
 	if(reason == i2cTransferDone){
-//		ext_evt_status |= I2C_TRANSACTION_DONE;
-		gecko_external_signal(I2C_TRANSACTION_DONE);
+		ext_evt_status |= I2C_TRANSACTION_DONE;
+		gecko_external_signal(ext_evt_status);
 //		TEMP_EVENT.I2CTransactionDone = true;
 //		TEMP_EVENT.NoEvent = false;
 	}
 
 	/* Transfer failure */
 	else if(reason != i2cTransferInProgress){
-//		ext_evt_status |= I2C_TRANSACTION_ERROR;
-		gecko_external_signal(I2C_TRANSACTION_ERROR);
+		ext_evt_status |= I2C_TRANSACTION_ERROR;
+		gecko_external_signal(ext_evt_status);
 //		TEMP_EVENT.I2CTransactionError = true;
 //		TEMP_EVENT.NoEvent = false;
 	}

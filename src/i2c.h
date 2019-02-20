@@ -21,7 +21,7 @@
 uint16_t tempData;
 
 /* Stores the temperature data in celcius */
-uint16_t celsTemp;
+uint8_t celsTemp;
 
 I2C_TransferReturn_TypeDef status;
 I2C_TransferSeq_TypeDef readSeq;
@@ -30,6 +30,6 @@ I2C_TransferSeq_TypeDef writeSeq;
 void initI2C(void);
 void tempSensorStartI2CWrite(void);
 void tempSensorStartI2CRead(void);
-void tempConv(void);
+uint8_t tempConv(void);
 
 #endif /* SRC_I2C_H_ */

@@ -14,6 +14,9 @@
 #include "log.h"
 #include "letimer.h"
 #include "i2c.h"
+#include "native_gecko.h"
+#include "gatt_db.h"
+#include "infrastructure.h"
 
 void scheduler(void);
 
@@ -27,12 +30,17 @@ struct tempEvents{
 } TEMP_EVENT;
 
 //#define NO_EVENT 0x01
+//uint32_t UF_FLAG = 0x01;
+//uint32_t COMP1_FLAG = 0x02;
+//uint32_t I2C_TRANSACTION_DONE = 0x04;
+//uint32_t I2C_TRANSACTION_ERROR = 0x08;
+
 #define UF_FLAG 0x01
 #define COMP1_FLAG 0x02
 #define I2C_TRANSACTION_DONE 0x04
 #define I2C_TRANSACTION_ERROR 0x08
 
-//uint32_t ext_evt_status;
+uint32_t ext_evt_status;
 
 /* Defining states for state machine */
 enum temp_sensor_state {
