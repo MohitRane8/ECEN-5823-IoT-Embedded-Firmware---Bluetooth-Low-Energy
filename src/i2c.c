@@ -1,7 +1,7 @@
 /*
  * i2c.c
- * This file contains the code for the appropriate initialization parameters required for I2C.
- * It also records the temperature data in Celcius.
+ * This file contains functions for initializing I2C, writing to sensor via I2C,
+ * reading from sensor via I2C, temperature conversion and I2C interrupt handler.
  *
  *  Created on: Feb 6, 2019
  *      Author: Mohit Rane
@@ -36,9 +36,9 @@ void initI2C(void)
 	NVIC_EnableIRQ(I2C0_IRQn);
 }
 
-/**************************************
+/*******************************************
  *	Initializes transfer function for write
- **************************************/
+ *******************************************/
 void tempSensorStartI2CWrite(void)
 {
 	/* Write transfer structure */
@@ -50,9 +50,9 @@ void tempSensorStartI2CWrite(void)
 	I2C_TransferInit(I2C0, &writeSeq);
 }
 
-/**************************************
+/*******************************************
  *	Initializes transfer function for read
- **************************************/
+ *******************************************/
 void tempSensorStartI2CRead(void)
 {
 	/* Read transfer structure */
@@ -64,9 +64,11 @@ void tempSensorStartI2CRead(void)
 	I2C_TransferInit(I2C0, &readSeq);
 }
 
-/**************************************
- *	Actual I2C transfer
- **************************************/
+/**********************************************
+ *	Conversion of temperature
+ *
+ *	@return temperature value in float format
+ *********************************************/
 float tempConv(void)
 {
 	/* Storing the temperature data read */
@@ -85,26 +87,19 @@ float tempConv(void)
 /**************************************
  *	I2C0 Interrupt Handling
  **************************************/
-void I2C0_IRQHandler(){
-//	__disable_irq();
-
+void I2C0_IRQHandler()
+{
 	I2C_TransferReturn_TypeDef reason = I2C_Transfer(I2C0);
 
 	/* Successful transfer */
 	if(reason == i2cTransferDone){
 		ext_evt_status |= I2C_TRANSACTION_DONE;
 		gecko_external_signal(ext_evt_status);
-//		TEMP_EVENT.I2CTransactionDone = true;
-//		TEMP_EVENT.NoEvent = false;
 	}
 
 	/* Transfer failure */
 	else if(reason != i2cTransferInProgress){
 		ext_evt_status |= I2C_TRANSACTION_ERROR;
 		gecko_external_signal(ext_evt_status);
-//		TEMP_EVENT.I2CTransactionError = true;
-//		TEMP_EVENT.NoEvent = false;
 	}
-
-//	__enable_irq();
 }

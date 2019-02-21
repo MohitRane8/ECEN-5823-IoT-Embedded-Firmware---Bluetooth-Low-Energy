@@ -1,5 +1,7 @@
 /*
  * letimer.c
+ * This file contains functions for initializing LETIMER, delay generation
+ * and LETIMER interrupt handler.
  *
  *  Created on: Jan 29, 2019
  *      Author: Mohit
@@ -88,17 +90,13 @@ void LETIMER0_IRQHandler(void)
 	{
 		ext_evt_status = UF_FLAG;
 		gecko_external_signal(ext_evt_status);
-//		TEMP_EVENT.UF_flag = true;
-//		TEMP_EVENT.NoEvent = false;
-		rollover++;
+		rollover++;								// increments count every set temperature measurement period
 	}
 
 	if(reason & LETIMER_IF_COMP1)
 	{
 		ext_evt_status = COMP1_FLAG;
 		gecko_external_signal(ext_evt_status);
-//		TEMP_EVENT.COMP1_flag = true;
-//		TEMP_EVENT.NoEvent = false;
 		LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1);
 	}
 }

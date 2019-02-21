@@ -29,17 +29,13 @@ struct tempEvents{
 	bool NoEvent;
 } TEMP_EVENT;
 
-//#define NO_EVENT 0x01
-//uint32_t UF_FLAG = 0x01;
-//uint32_t COMP1_FLAG = 0x02;
-//uint32_t I2C_TRANSACTION_DONE = 0x04;
-//uint32_t I2C_TRANSACTION_ERROR = 0x08;
-
+/* Defining bit-masks for events */
 #define UF_FLAG 0x01
 #define COMP1_FLAG 0x02
 #define I2C_TRANSACTION_DONE 0x04
 #define I2C_TRANSACTION_ERROR 0x08
 
+/* Value passed as gecko external signal after appropriate bit-masking */
 uint32_t ext_evt_status;
 
 /* Defining states for state machine */

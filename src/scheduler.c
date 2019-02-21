@@ -23,7 +23,13 @@ enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
 
 void scheduler(void)
 {
-	/* Scheduler */
+	/* Scheduler / State Machine
+	 * 4 states present:
+	 * - TEMP_SENSOR_POWER_OFF
+	 * - TEMP_SENSOR_WAIT_FOR_POWER_UP
+	 * - TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE
+	 * - TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE
+	 * - TEMP_SENSOR_I2C_ERROR */
 	switch(current_state){
 		/* Power Off state */
 		case TEMP_SENSOR_POWER_OFF:
@@ -99,17 +105,17 @@ void scheduler(void)
 				GPIO_PinOutClear(gpioPortD, 15);
 
 				/* Declaring variables for temperature */
-				uint8_t temp[5];
+				uint8_t temp[5];				// temperature data buffer to be sent to BLE client
 				uint8_t *p = temp;
-				uint8_t flags = 0x00;   /* flags set as 0 for Celsius, no time stamp and no temperature type. */
-				UINT8_TO_BITSTREAM(p, flags);
+				uint8_t flags = 0x00;   		// flags set as 0 for Celsius, no time stamp and no temperature type.
+				UINT8_TO_BITSTREAM(p, flags);	// Appending flags to data buffer
 				float celtemp;
 
 				/* Read temperature via I2C */
 				celtemp = tempConv();
 
-				uint32_t tempBit = FLT_TO_UINT32((celtemp*1000), -3);
-				UINT32_TO_BITSTREAM(p, tempBit);
+				uint32_t tempBit = FLT_TO_UINT32((celtemp*1000), -3);	// Converting data type of temperature data
+				UINT32_TO_BITSTREAM(p, tempBit);						// Appending temperature data to buffer
 
 				// Sending temperature data to BLE client
 				gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 5, temp);
@@ -140,8 +146,8 @@ void scheduler(void)
 
 	/* Changing the current state and logging the change */
 	if(current_state != next_state){
-//			timestamp = loggerGetTimestamp();
-//			LOG_INFO("%d: ", timestamp);
+//		timestamp = loggerGetTimestamp();
+//		LOG_INFO("%d: ", timestamp);
 		LOG_INFO("Temp sensor transitioned from state %d to state %d\n", current_state, next_state);
 		current_state = next_state;
 	}
