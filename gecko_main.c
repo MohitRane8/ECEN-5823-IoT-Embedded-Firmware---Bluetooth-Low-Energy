@@ -82,8 +82,9 @@ bool gecko_update(struct gecko_cmd_packet* evt)
           /* Enter to DFU OTA mode */
           gecko_cmd_system_reset(2);
         } else {
-          /* Restart advertising after client has disconnected */
-          gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
+        	gecko_cmd_system_set_tx_power(0);
+        	/* Restart advertising after client has disconnected */
+        	gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
         }
         break;
 

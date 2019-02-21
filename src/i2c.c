@@ -77,7 +77,7 @@ float tempConv(void)
 	float celsTemp = ((175.72 * (float)tempData / 65536) - 46.85);
 	
 	/* Logging temperature data */
-	LOG_INFO("Temperature: %0.2f\n", celsTemp);
+	LOG_INFO("Temperature: %d\n", (uint32_t)celsTemp);
 
 	return celsTemp;
 }

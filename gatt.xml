@@ -60,7 +60,7 @@
   </service>
   
   <!--Health Thermometer-->
-  <service advertise="false" id="health_thermometer" name="Health Thermometer" requirement="mandatory" sourceId="org.bluetooth.service.health_thermometer" type="primary" uuid="1809">
+  <service advertise="true" id="health_thermometer" name="Health Thermometer" requirement="mandatory" sourceId="org.bluetooth.service.health_thermometer" type="primary" uuid="1809">
     <informativeText>Abstract:  The Health Thermometer service exposes temperature and other data from a thermometer intended for healthcare and fitness applications.  Summary:  The Health Thermometer service is instantiated as a Primary Service. There are one or more instantiations of the Health Thermometer service per device claiming conformance with this specification.  </informativeText>
     
     <!--Temperature Measurement-->
@@ -117,7 +117,7 @@
   </service>
   
   <!--Tx Power-->
-  <service advertise="false" id="tx_power" name="Tx Power" requirement="mandatory" sourceId="org.bluetooth.service.tx_power" type="primary" uuid="1804">
+  <service advertise="true" id="tx_power" name="Tx Power" requirement="mandatory" sourceId="org.bluetooth.service.tx_power" type="primary" uuid="1804">
     <informativeText>Abstract:  This service exposes a device's current transmit power level when in a connection.  Summary:  The Tx Power service is instantiated as a Primary Service. There is only one instance of the Tx Power service on a device. There is exactly one instance of the Tx Power Level characteristic  </informativeText>
     
     <!--Tx Power Level-->

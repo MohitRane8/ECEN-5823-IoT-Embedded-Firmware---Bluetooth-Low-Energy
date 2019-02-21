@@ -9,6 +9,9 @@
  *
  *	ENERGYMODE parameter defined in configSLEEP.h allows the system to
  *	sleep in that particular sleep mode.
+ *
+ *	References:
+ *	1. soc-thermometer Software Example by Silicon Labs
  ************************************************************************/
 
 /* Board headers */
@@ -85,6 +88,8 @@ struct gecko_cmd_packet* evt;
 
 extern bool gecko_update(struct gecko_cmd_packet* evt);
 
+int8_t rssi;
+
 int main(void)
 {
 	// Initialize device
@@ -126,71 +131,72 @@ int main(void)
 	/* Infinite loop */
 	while(1)
 	{
-//		if(ENERGYMODE > sleepEM0 && TEMP_EVENT.NoEvent == true)
-//		{
-//			evt = gecko_wait_event();
-//		}
-
-//		if(ENERGYMODE > sleepEM0)
-//		{
-//			evt = gecko_wait_event();
-//		}
-
-		evt = gecko_wait_event();
+		if(ENERGYMODE > sleepEM0 && TEMP_EVENT.NoEvent == true)
+		{
+			evt = gecko_wait_event();
+		}
 
 		gecko_update(evt);
 
 		switch BGLIB_MSG_ID(evt->header) {
-//			case gecko_evt_system_boot_id:
-//
-//				/* Set advertising parameters. 100ms advertisement interval.
-//				 * The first parameter is advertising set handle
-//				 * The next two parameters are minimum and maximum advertising interval, both in
-//				 * units of (milliseconds * 1.6).
-//				 * The last two parameters are duration and maxevents left as default. */
-//				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_set_advertise_timing(0, 160, 160, 0, 0))
-//
-//				/* Start general advertising and enable connections. */
-//				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
-//				break;
 
-
+			/* Setting connection parameters for connection */
 			case gecko_evt_le_connection_opened_id:
 				gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, 60, 60, 3, 600);
 				break;
 
+			/* Getting rssi */
+			case gecko_evt_gatt_server_characteristic_status_id:
+				gecko_cmd_le_connection_get_rssi(evt-> data.evt_gatt_server_characteristic_status.connection);
+				break;
+
+			/* Setting transmit power */
+			case gecko_evt_le_connection_rssi_id:
+				rssi = evt->data.evt_le_connection_rssi.rssi;
+				struct gecko_msg_system_set_tx_power_rsp_t *tx_power;
+
+				/* Adjusting transmit power based on proximity of master/client */
+				if(rssi > -35)
+					tx_power = gecko_cmd_system_set_tx_power(80);
+				else if(( rssi <= -35 ) && (rssi > -45))
+					tx_power = gecko_cmd_system_set_tx_power(-200);
+				else if((rssi <= -45 ) && (rssi > -55))
+					tx_power = gecko_cmd_system_set_tx_power(-150);
+				else if((rssi <= -55) && (rssi > -65))
+					tx_power = gecko_cmd_system_set_tx_power(-50);
+				else if((rssi <= -65) && (rssi > -75))
+					tx_power = gecko_cmd_system_set_tx_power(0);
+				else if((rssi <= -75) && (rssi > -85))
+					tx_power = gecko_cmd_system_set_tx_power(50);
+				else
+					tx_power = gecko_cmd_system_set_tx_power(-260);
+				break;
+
+			/* Handling all external events */
 			case gecko_evt_system_external_signal_id:
 				if (((evt->data.evt_system_external_signal.extsignals) & UF_FLAG) != 0) {
-					/* Run application specific task */
 					TEMP_EVENT.UF_flag = true;
 					TEMP_EVENT.NoEvent = false;
 					scheduler();
 				}
-//				break;
 
 				if (((evt->data.evt_system_external_signal.extsignals) & COMP1_FLAG) != 0) {
-					/* Run application specific task */
 					TEMP_EVENT.COMP1_flag = true;
 					TEMP_EVENT.NoEvent = false;
 					scheduler();
 				}
-//				break;
 
 				if (((evt->data.evt_system_external_signal.extsignals) & I2C_TRANSACTION_DONE) != 0) {
-					/* Run application specific task */
 					TEMP_EVENT.I2CTransactionDone = true;
 					TEMP_EVENT.NoEvent = false;
 					scheduler();
 				}
-//				break;
 
 				if (((evt->data.evt_system_external_signal.extsignals) & I2C_TRANSACTION_ERROR) != 0) {
-					/* Run application specific task */
 					TEMP_EVENT.I2CTransactionError = true;
 					TEMP_EVENT.NoEvent = false;
 					scheduler();
 				}
-//				break;
 		}
  	}
 }
