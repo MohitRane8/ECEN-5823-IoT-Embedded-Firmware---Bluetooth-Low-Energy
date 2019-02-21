@@ -46,7 +46,7 @@ void scheduler(void)
 				next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
 			}
 			else{
-				LOG_INFO("Error");
+				LOG_INFO("Error in TEMP_SENSOR_POWER_OFF case\n");
 			}
 			break;
 
@@ -63,6 +63,9 @@ void scheduler(void)
 				tempSensorStartI2CWrite();
 
 				next_state = TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE;
+			}
+			else{
+				LOG_INFO("Error in TEMP_SENSOR_WAIT_FOR_POWER_UP case\n");
 			}
 			break;
 
@@ -89,6 +92,10 @@ void scheduler(void)
 				GPIO_PinOutClear(gpioPortD, 15);
 
 				next_state = TEMP_SENSOR_I2C_ERROR;
+			}
+
+			else{
+				LOG_INFO("Error in TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE case\n");
 			}
 			break;
 
@@ -134,6 +141,10 @@ void scheduler(void)
 				GPIO_PinOutClear(gpioPortD, 15);
 
 				next_state = TEMP_SENSOR_I2C_ERROR;
+			}
+
+			else{
+				LOG_INFO("Error in TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE case\n");
 			}
 			break;
 
