@@ -1,17 +1,22 @@
 /************************************************************************
- *	Assignment 4 - I2C Load Power Management Part 2
+ *	Assignment 5 - HTP BLE Assignment
  *	Author: Mohit Rane
- *	Submission Date: February 13th, 2019
+ *	Submission Date: February 20th, 2019
  *
  *	In this assignment, we measure the temperature every 3 seconds
  *	using the inbuilt temperature sensor over I2C. The period is
  *	controlled by the LETIMER.
+ *
+ *	The temperature data is sent to the client bluetooth device when
+ *	a connection is established. The system only takes temperature
+ *	when a connection is made.
  *
  *	ENERGYMODE parameter defined in configSLEEP.h allows the system to
  *	sleep in that particular sleep mode.
  *
  *	References:
  *	1. soc-thermometer Software Example by Silicon Labs
+ *	2. https://www.silabs.com/community/wireless/bluetooth/knowledge-base.entry.html/2016/10/04/scheduling_applicati-ERXS
  ************************************************************************/
 
 /* Board headers */
@@ -76,6 +81,8 @@ extern bool gecko_update(struct gecko_cmd_packet* evt);
 
 int8_t rssi;
 
+/* Flag which is set upon successful connection
+ * Indicates the system to do the temperature reading process */
 extern bool ble_connection_flag;
 
 int main(void)
@@ -107,11 +114,10 @@ int main(void)
 	// Initialize LETIMER
 	initLETIMER();
 
-	/* Initialize all events to 0 */
-//	TEMP_EVENT = {0};
-
+	// Setting initial scheduler event as no event
 	TEMP_EVENT.NoEvent = true;
 
+	// Blocking sleep according to the mode defined
 #if ((ENERGYMODE == 0) | (ENERGYMODE == 1) | (ENERGYMODE == 2))
 	SLEEP_SleepBlockBegin(ENERGYMODE+1);
 #endif
@@ -119,8 +125,10 @@ int main(void)
 	/* Infinite loop */
 	while(1)
 	{
+		/* Allowing the system to sleep in defined state if there is no event */
 		if(ENERGYMODE > sleepEM0 && TEMP_EVENT.NoEvent == true)
 		{
+			/* Blocking until new event arrives */
 			evt = gecko_wait_event();
 		}
 
@@ -134,27 +142,28 @@ int main(void)
 		         * The next two parameters are minimum and maximum advertising interval, both in
 		         * units of (milliseconds * 1.6).
 		         * The last two parameters are duration and maxevents left as default. */
-		    	  BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_set_advertise_timing(0, 400, 400, 0, 0));
+		    	  BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_set_advertise_timing(0, ADV_MIN_INTERVAL, ADV_MIN_INTERVAL, 0, 0));
 
 		        /* Start general advertising and enable connections. */
 		    	  BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
 		        break;
 
-			/* Setting connection parameters for connection */
 			case gecko_evt_le_connection_opened_id:
+				/* Setting connection parameters for connection */
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, MIN_INTERVAL, MAX_INTERVAL, SLAVE_LATENCY, TIMEOUT));
+
+				/* Setting connection flag to start state machine based on external events */
 				ble_connection_flag = true;
 				break;
 
-			/* Getting rssi */
 			case gecko_evt_gatt_server_characteristic_status_id:
+				/* Getting rssi */
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_connection_get_rssi(evt-> data.evt_gatt_server_characteristic_status.connection));
 				break;
 
-			/* Setting transmit power */
 			case gecko_evt_le_connection_rssi_id:
 				rssi = evt->data.evt_le_connection_rssi.rssi;
-				struct gecko_msg_system_set_tx_power_rsp_t *tx_power;
+				int16 tx_power;
 
 				/* Adjusting transmit power based on proximity of master/client */
 				if(rssi > -35)
@@ -174,31 +183,35 @@ int main(void)
 
 				/* Modifying Tx power in safe way */
 				gecko_cmd_system_halt(1);
-				gecko_cmd_system_set_tx_power(tx_power);
+				gecko_cmd_system_set_tx_power(tx_power);	// Setting transmit power
 				gecko_cmd_system_halt(0);
 				break;
 
-			/* Handling all external events */
+			/* Case handling all external events */
 			case gecko_evt_system_external_signal_id:
 				if(ble_connection_flag == true){
+					// 3 second underflow flag check
 					if (((evt->data.evt_system_external_signal.extsignals) & UF_FLAG) != 0) {
 						TEMP_EVENT.UF_flag = true;
 						TEMP_EVENT.NoEvent = false;
 						scheduler();
 					}
 
+					// 80 ms comp1 flag check
 					if (((evt->data.evt_system_external_signal.extsignals) & COMP1_FLAG) != 0) {
 						TEMP_EVENT.COMP1_flag = true;
 						TEMP_EVENT.NoEvent = false;
 						scheduler();
 					}
 
+					// Write and Read transaction completion check
 					if (((evt->data.evt_system_external_signal.extsignals) & I2C_TRANSACTION_DONE) != 0) {
 						TEMP_EVENT.I2CTransactionDone = true;
 						TEMP_EVENT.NoEvent = false;
 						scheduler();
 					}
 
+					// Write and Read transaction error check
 					if (((evt->data.evt_system_external_signal.extsignals) & I2C_TRANSACTION_ERROR) != 0) {
 						TEMP_EVENT.I2CTransactionError = true;
 						TEMP_EVENT.NoEvent = false;

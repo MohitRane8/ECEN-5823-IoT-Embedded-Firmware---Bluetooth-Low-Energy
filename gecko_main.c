@@ -90,6 +90,7 @@ bool gecko_update(struct gecko_cmd_packet* evt)
         	gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
         }
 
+        /* Turning the connection flag to stop the system from taking temperature */
         ble_connection_flag = false;
         break;
 

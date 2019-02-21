@@ -1,7 +1,15 @@
 /*
  * scheduler.c
- * This file contains the state machine which handles all the events of
+ * This file contains the state machine which handles all the internal events of
  * temperature measurement.
+ *
+ * This includes:
+ * - temperature measurement every 3 seconds
+ * - load power management
+ * - writing command to temperature sensor
+ * - reading temperature data from sensor
+ * - sending temperature data to BLE client
+ * - turning off sensor
  *
  *  Created on: Feb 18, 2019
  *      Author: Mohit
@@ -9,11 +17,9 @@
 
 #include "scheduler.h"
 
-
 /* Defining the initial state */
 enum temp_sensor_state current_state = TEMP_SENSOR_POWER_OFF;
 enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
-
 
 void scheduler(void)
 {
@@ -25,10 +31,10 @@ void scheduler(void)
 				TEMP_EVENT.UF_flag = false;
 				TEMP_EVENT.NoEvent = true;
 
-				// Enable temperature sensor
+				/* Enabling temperature sensor */
 				GPIO_PinOutSet(gpioPortD, 15);
 
-				// Setting the timer for the gpio pin
+				/* Setting timer for load power management */
 				timerSetEventInUs(80000);
 
 				next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
@@ -44,10 +50,10 @@ void scheduler(void)
 				TEMP_EVENT.COMP1_flag = false;
 				TEMP_EVENT.NoEvent = true;
 
-				// sleep block begin
+				/* Blocking sleep in EM2 for I2C transfers */
 				SLEEP_SleepBlockBegin(sleepEM2);
 
-				//i2c transfer init for write
+				/* Writing command to temperature sensor via I2C */
 				tempSensorStartI2CWrite();
 
 				next_state = TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE;
@@ -60,17 +66,22 @@ void scheduler(void)
 				TEMP_EVENT.I2CTransactionDone = false;
 				TEMP_EVENT.NoEvent = true;
 
+				/* Reading temperature from temperature sensor via I2C */
 				tempSensorStartI2CRead();
+
 				next_state = TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE;
 			}
 
 			if(TEMP_EVENT.I2CTransactionError){
 				TEMP_EVENT.I2CTransactionError = false;
 				TEMP_EVENT.NoEvent = true;
-				// sleep block end
+
+				/* Ending sleep block after unsuccessful I2C transaction */
 				SLEEP_SleepBlockEnd(sleepEM2);
-				//power off sensor
+
+				/* Turning off temperature sensor */
 				GPIO_PinOutClear(gpioPortD, 15);
+
 				next_state = TEMP_SENSOR_I2C_ERROR;
 			}
 			break;
@@ -80,34 +91,42 @@ void scheduler(void)
 			if(TEMP_EVENT.I2CTransactionDone){
 				TEMP_EVENT.I2CTransactionDone = false;
 				TEMP_EVENT.NoEvent = true;
-				// sleep block end
+
+				/* Ending sleep block after successful I2C transaction */
 				SLEEP_SleepBlockEnd(sleepEM2);
-				//power off sensor
+
+				/* Turning off temperature sensor */
 				GPIO_PinOutClear(gpioPortD, 15);
-				//displayTemperature
+
+				/* Declaring variables for temperature */
 				uint8_t temp[5];
 				uint8_t *p = temp;
 				uint8_t flags = 0x00;   /* flags set as 0 for Celsius, no time stamp and no temperature type. */
 				UINT8_TO_BITSTREAM(p, flags);
-
 				float celtemp;
+
+				/* Read temperature via I2C */
 				celtemp = tempConv();
 
 				uint32_t tempBit = FLT_TO_UINT32((celtemp*1000), -3);
 				UINT32_TO_BITSTREAM(p, tempBit);
 
-				// sending the temperature data to app via bluetooth
+				// Sending temperature data to BLE client
 				gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 5, temp);
+
 				next_state = TEMP_SENSOR_POWER_OFF;
 			}
 
 			if(TEMP_EVENT.I2CTransactionError){
 				TEMP_EVENT.I2CTransactionError = false;
 				TEMP_EVENT.NoEvent = true;
-				// sleep block end
+
+				/* Ending sleep block after unsuccessful I2C transaction */
 				SLEEP_SleepBlockEnd(sleepEM2);
-				//power off sensor
+
+				/* Turning off temperature sensor */
 				GPIO_PinOutClear(gpioPortD, 15);
+
 				next_state = TEMP_SENSOR_I2C_ERROR;
 			}
 			break;
