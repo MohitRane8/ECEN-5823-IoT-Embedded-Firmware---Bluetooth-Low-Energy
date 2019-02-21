@@ -41,6 +41,8 @@ GATT_DATA(const uint16_t bg_gattdb_data_uuidtable_16_map [])=
     0x2a1e,
     0x2a21,
     0x2906,
+    0x1804,
+    0x2a07,
     0x1801,
     0x2a05,
 };
@@ -54,6 +56,22 @@ GATT_DATA(const uint8_t bg_gattdb_data_uuidtable_128_map [])=
 
 
 
+uint8_t bg_gattdb_data_attribute_field_34_data[1]={0x00,};
+GATT_DATA(const struct bg_gattdb_attribute_chrvalue	bg_gattdb_data_attribute_field_34 ) = {
+	.properties=0x02,
+	.index=8,
+	.max_len=1,
+	.data=bg_gattdb_data_attribute_field_34_data,
+};
+
+GATT_DATA(const struct bg_gattdb_buffer_with_len	bg_gattdb_data_attribute_field_33 ) = {
+	.len=5,
+	.data={0x02,0x23,0x00,0x07,0x2a,}
+};
+GATT_DATA(const struct bg_gattdb_buffer_with_len	bg_gattdb_data_attribute_field_32 ) = {
+	.len=2,
+	.data={0x04,0x18,}
+};
 uint8_t bg_gattdb_data_attribute_field_31_data[4]={0x00,0x00,0x00,0x00,};
 GATT_DATA(const struct bg_gattdb_attribute_chrvalue	bg_gattdb_data_attribute_field_31 ) = {
 	.properties=0x02,
@@ -200,7 +218,7 @@ GATT_DATA(const struct bg_gattdb_buffer_with_len	bg_gattdb_data_attribute_field_
 GATT_DATA(const struct bg_gattdb_attribute bg_gattdb_data_attributes_map[])={
     {.uuid=0x0000,.permissions=0x801,.caps=0xffff,.datatype=0x00,.min_key_size=0x00,.constdata=&bg_gattdb_data_attribute_field_0},
     {.uuid=0x0002,.permissions=0x801,.caps=0xffff,.datatype=0x00,.min_key_size=0x00,.constdata=&bg_gattdb_data_attribute_field_1},
-    {.uuid=0x0012,.permissions=0x800,.caps=0xffff,.datatype=0x01,.min_key_size=0x00,.dynamicdata=&bg_gattdb_data_attribute_field_2},
+    {.uuid=0x0014,.permissions=0x800,.caps=0xffff,.datatype=0x01,.min_key_size=0x00,.dynamicdata=&bg_gattdb_data_attribute_field_2},
     {.uuid=0x000c,.permissions=0x807,.caps=0xffff,.datatype=0x03,.min_key_size=0x00,.configdata={.flags=0x02,.index=0x00,.clientconfig_index=0x00}},
     {.uuid=0x0000,.permissions=0x801,.caps=0xffff,.datatype=0x00,.min_key_size=0x00,.constdata=&bg_gattdb_data_attribute_field_4},
     {.uuid=0x0002,.permissions=0x801,.caps=0xffff,.datatype=0x00,.min_key_size=0x00,.constdata=&bg_gattdb_data_attribute_field_5},
@@ -230,6 +248,9 @@ GATT_DATA(const struct bg_gattdb_attribute bg_gattdb_data_attributes_map[])={
     {.uuid=0x000f,.permissions=0x801,.caps=0xffff,.datatype=0x01,.min_key_size=0x00,.dynamicdata=&bg_gattdb_data_attribute_field_29},
     {.uuid=0x000c,.permissions=0x803,.caps=0xffff,.datatype=0x03,.min_key_size=0x00,.configdata={.flags=0x01,.index=0x06,.clientconfig_index=0x03}},
     {.uuid=0x0010,.permissions=0x801,.caps=0xffff,.datatype=0x01,.min_key_size=0x00,.dynamicdata=&bg_gattdb_data_attribute_field_31},
+    {.uuid=0x0000,.permissions=0x801,.caps=0xffff,.datatype=0x00,.min_key_size=0x00,.constdata=&bg_gattdb_data_attribute_field_32},
+    {.uuid=0x0002,.permissions=0x801,.caps=0xffff,.datatype=0x00,.min_key_size=0x00,.constdata=&bg_gattdb_data_attribute_field_33},
+    {.uuid=0x0012,.permissions=0x801,.caps=0xffff,.datatype=0x01,.min_key_size=0x00,.dynamicdata=&bg_gattdb_data_attribute_field_34},
 };
 
 GATT_DATA(const uint16_t bg_gattdb_data_attributes_dynamic_mapping_map[])={
@@ -241,21 +262,22 @@ GATT_DATA(const uint16_t bg_gattdb_data_attributes_dynamic_mapping_map[])={
 	0x001b,
 	0x001e,
 	0x0020,
+	0x0023,
 };
 
-GATT_DATA(const uint8_t bg_gattdb_data_adv_uuid16_map[])={0x09, 0x18, };
+GATT_DATA(const uint8_t bg_gattdb_data_adv_uuid16_map[])={0x0};
 GATT_DATA(const uint8_t bg_gattdb_data_adv_uuid128_map[])={0x0};
 GATT_HEADER(const struct bg_gattdb_def bg_gattdb_data)={
     .attributes=bg_gattdb_data_attributes_map,
-    .attributes_max=32,
-    .uuidtable_16_size=19,
+    .attributes_max=35,
+    .uuidtable_16_size=21,
     .uuidtable_16=bg_gattdb_data_uuidtable_16_map,
     .uuidtable_128_size=2,
     .uuidtable_128=bg_gattdb_data_uuidtable_128_map,
-    .attributes_dynamic_max=8,
+    .attributes_dynamic_max=9,
     .attributes_dynamic_mapping=bg_gattdb_data_attributes_dynamic_mapping_map,
     .adv_uuid16=bg_gattdb_data_adv_uuid16_map,
-    .adv_uuid16_num=1,
+    .adv_uuid16_num=0,
     .adv_uuid128=bg_gattdb_data_adv_uuid128_map,
     .adv_uuid128_num=0,
     .caps_mask=0xffff,

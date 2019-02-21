@@ -156,7 +156,7 @@ int main(void)
 
 
 			case gecko_evt_le_connection_opened_id:
-				gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, 60, 60, 5, 250);
+				gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, 60, 60, 3, 600);
 				break;
 
 			case gecko_evt_system_external_signal_id:
