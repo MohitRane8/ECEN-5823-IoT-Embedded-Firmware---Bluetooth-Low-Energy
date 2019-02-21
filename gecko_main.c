@@ -51,6 +51,7 @@
 // Flag for indicating DFU Reset must be performed
 uint8_t boot_to_dfu = 0;
 
+bool ble_connection_flag;
 
 bool gecko_update(struct gecko_cmd_packet* evt)
 {
@@ -62,18 +63,20 @@ bool gecko_update(struct gecko_cmd_packet* evt)
       /* This boot event is generated when the system boots up after reset.
        * Do not call any stack commands before receiving the boot event.
        * Here the system is set to start advertising immediately after boot procedure. */
-      case gecko_evt_system_boot_id:
+#if 0
+    	case gecko_evt_system_boot_id:
 
         /* Set advertising parameters. 100ms advertisement interval.
          * The first parameter is advertising set handle
          * The next two parameters are minimum and maximum advertising interval, both in
          * units of (milliseconds * 1.6).
          * The last two parameters are duration and maxevents left as default. */
-        gecko_cmd_le_gap_set_advertise_timing(0, 400, 400, 0, 0);
+    	  BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_set_advertise_timing(0, 400, 400, 0, 0));
 
         /* Start general advertising and enable connections. */
-        gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
+    	  BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
         break;
+#endif
 
       case gecko_evt_le_connection_closed_id:
 
@@ -86,6 +89,8 @@ bool gecko_update(struct gecko_cmd_packet* evt)
         	/* Restart advertising after client has disconnected */
         	gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
         }
+
+        ble_connection_flag = false;
         break;
 
       /* Events related to OTA upgrading
