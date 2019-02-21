@@ -7,7 +7,7 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
 
 1. Provide screen shot verifying the Advertising period matches the values required for the assignment.
    <br>Screenshot:  
-   ![advertising_period](https://github.com/CU-ECEN-5823/assignment5-htp-ble-MohitRane8/blob/master/screenshots/assignment-5/advertising_period.JPG)  
+   ![advertising_period](https://github.com/CU-ECEN-5823/assignment5-htp-ble-MohitRane8/blob/master/screenshots/assignment-5/advertising_period_1.JPG)  
 
 2. What is the average current between advertisements?
    Answer: 1.28 uA
@@ -17,7 +17,7 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
 3. What is the peak current of an advertisement? 
    Answer: 24.53 mA
    <br>Screenshot:  
-   ![peak_current_of_advertisement](https://github.com/CU-ECEN-5823/assignment5-htp-ble-MohitRane8/blob/master/screenshots/assignment-5/peak_current_of_advertisement.JPG)  
+   ![peak_current_of_advertisement](https://github.com/CU-ECEN-5823/assignment5-htp-ble-MohitRane8/blob/master/screenshots/assignment-5/peak_current_of_advertisement_1.JPG)  
 
 4. Provide screen shot verifying the connection interval setting matches the value required for the assignment.
    <br>Screenshot: 
