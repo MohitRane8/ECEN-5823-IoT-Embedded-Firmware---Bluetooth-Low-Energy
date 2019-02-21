@@ -1,5 +1,7 @@
 /*
  * scheduler.c
+ * This file contains the state machine which handles all the events of
+ * temperature measurement.
  *
  *  Created on: Feb 18, 2019
  *      Author: Mohit
@@ -11,6 +13,7 @@
 /* Defining the initial state */
 enum temp_sensor_state current_state = TEMP_SENSOR_POWER_OFF;
 enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
+
 
 void scheduler(void)
 {
@@ -84,7 +87,7 @@ void scheduler(void)
 				//displayTemperature
 				uint8_t temp[5];
 				uint8_t *p = temp;
-				uint8_t flags = 0x00;   /* HTM flags set as 0 for Celsius, no time stamp and no temperature type. */
+				uint8_t flags = 0x00;   /* flags set as 0 for Celsius, no time stamp and no temperature type. */
 				UINT8_TO_BITSTREAM(p, flags);
 
 				float celtemp;
@@ -93,7 +96,7 @@ void scheduler(void)
 				uint32_t tempBit = FLT_TO_UINT32((celtemp*1000), -3);
 				UINT32_TO_BITSTREAM(p, tempBit);
 
-//				gecko_cmd_gatt_server_write_attribute_value(1, &temp);
+				// sending the temperature data to app via bluetooth
 				gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 5, temp);
 				next_state = TEMP_SENSOR_POWER_OFF;
 			}

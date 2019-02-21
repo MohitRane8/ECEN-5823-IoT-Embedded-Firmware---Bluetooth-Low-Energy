@@ -48,13 +48,7 @@
 #endif
 
 /* Libraries required by this assignment */
-#include "log.h"
-#include "letimer.h"
-#include "configSLEEP.h"
-#include "i2c.h"
-#include "scheduler.h"
-#include "gecko_ble_errors.h"
-#include "gatt_db.h"
+#include "main.h"
 
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 
@@ -75,14 +69,6 @@ static const gecko_configuration_t config = {
   .pa.input = GECKO_RADIO_PA_INPUT_VBAT, // Configure PA input to VBAT
 #endif // (HAL_PA_ENABLE) && defined(FEATURE_PA_HIGH_POWER)
 };
-
-
-//extern bool NoEvent = true;
-
-//void gecko_ecen5823_update(struct gecko_cmd_packer* evt)
-//{
-//
-//}
 
 struct gecko_cmd_packet* evt;
 
@@ -142,7 +128,7 @@ int main(void)
 
 			/* Setting connection parameters for connection */
 			case gecko_evt_le_connection_opened_id:
-				gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, 60, 60, 3, 600);
+				gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, MIN_INTERVAL, MAX_INTERVAL, SLAVE_LATENCY, TIMEOUT);
 				break;
 
 			/* Getting rssi */
@@ -157,7 +143,7 @@ int main(void)
 
 				/* Adjusting transmit power based on proximity of master/client */
 				if(rssi > -35)
-					tx_power = gecko_cmd_system_set_tx_power(80);
+					tx_power = gecko_cmd_system_set_tx_power(TX_MIN);
 				else if(( rssi <= -35 ) && (rssi > -45))
 					tx_power = gecko_cmd_system_set_tx_power(-200);
 				else if((rssi <= -45 ) && (rssi > -55))
@@ -169,7 +155,7 @@ int main(void)
 				else if((rssi <= -75) && (rssi > -85))
 					tx_power = gecko_cmd_system_set_tx_power(50);
 				else
-					tx_power = gecko_cmd_system_set_tx_power(-260);
+					tx_power = gecko_cmd_system_set_tx_power(TX_MAX);
 				break;
 
 			/* Handling all external events */
