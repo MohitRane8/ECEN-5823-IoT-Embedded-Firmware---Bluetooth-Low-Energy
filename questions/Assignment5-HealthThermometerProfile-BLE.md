@@ -15,7 +15,7 @@ See [Mastering Markdown](https://guides.github.com/features/mastering-markdown/)
    ![avg_current_between_advertisements](https://github.com/CU-ECEN-5823/assignment5-htp-ble-MohitRane8/blob/master/screenshots/assignment-5/avg_current_between_advertisements.JPG)  
 
 3. What is the peak current of an advertisement? 
-   Answer: 24.92 mA
+   Answer: 24.53 mA
    <br>Screenshot:  
    ![peak_current_of_advertisement](https://github.com/CU-ECEN-5823/assignment5-htp-ble-MohitRane8/blob/master/screenshots/assignment-5/peak_current_of_advertisement.JPG)  
 
