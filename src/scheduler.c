@@ -37,8 +37,12 @@ void scheduler(void)
 				TEMP_EVENT.UF_flag = false;
 				TEMP_EVENT.NoEvent = true;
 
+				displayUpdate();
+
+#if 0
 				/* Enabling temperature sensor */
 				GPIO_PinOutSet(gpioPortD, 15);
+#endif
 
 				/* Setting timer for load power management */
 				timerSetEventInUs(80000);
@@ -88,8 +92,10 @@ void scheduler(void)
 				/* Ending sleep block after unsuccessful I2C transaction */
 				SLEEP_SleepBlockEnd(sleepEM2);
 
+#if 0
 				/* Turning off temperature sensor */
 				GPIO_PinOutClear(gpioPortD, 15);
+#endif
 
 				next_state = TEMP_SENSOR_I2C_ERROR;
 			}
@@ -126,6 +132,8 @@ void scheduler(void)
 
 				// Sending temperature data to BLE client
 				gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 5, temp);
+
+				displayPrintf(DISPLAY_ROW_TEMPVALUE, "%.3f", celtemp);
 
 				next_state = TEMP_SENSOR_POWER_OFF;
 			}

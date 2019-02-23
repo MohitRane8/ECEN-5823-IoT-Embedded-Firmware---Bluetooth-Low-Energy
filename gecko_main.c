@@ -91,7 +91,7 @@ bool gecko_update(struct gecko_cmd_packet* evt)
         }
 
         /* Turning the connection flag to stop the system from taking temperature */
-        ble_connection_flag = false;
+//        ble_connection_flag = false;
         break;
 
       /* Events related to OTA upgrading

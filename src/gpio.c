@@ -44,3 +44,19 @@ void gpioLed1SetOff()
 {
 	GPIO_PinOutClear(LED1_port,LED1_pin);
 }
+
+void gpioEnableDisplay()
+{
+	/* Enabling temperature sensor and display pin */
+	GPIO_PinOutSet(LCD_PORT_DISP_SEL, LCD_PIN_DISP_SEL);
+}
+
+void gpioSetDisplayExtcomin(bool high)
+{
+	/* Setting EXTCOMIN pin based on boolean value - to toggle */
+	if (high == true)
+		GPIO_PinOutSet(LCD_PORT_EXTCOMIN, LCD_PIN_EXTCOMIN);
+
+	else
+		GPIO_PinOutClear(LCD_PORT_EXTCOMIN, LCD_PIN_EXTCOMIN);
+}

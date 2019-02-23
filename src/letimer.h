@@ -14,13 +14,12 @@
 #include "gpio.h"
 #include "clock.h"
 #include "log.h"
-//#include "event.h"
 #include "scheduler.h"
 
 uint32_t timestamp;
 
 /* Setting time period for temperature measurement */
-#define PERIOD_MS 3000
+#define PERIOD_MS 1000
 
 /* Ticks that will be loaded in COMP0 as per time period */
 uint32_t periodCount;

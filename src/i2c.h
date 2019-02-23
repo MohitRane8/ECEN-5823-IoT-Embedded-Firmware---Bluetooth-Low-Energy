@@ -11,7 +11,6 @@
 
 #include "log.h"
 #include "em_i2c.h"
-//#include "event.h"
 #include "scheduler.h"
 #include "em_gpio.h"
 #include "i2cspm.h"

@@ -19,7 +19,7 @@
 #include "log.h"
 #include "display.h"
 #include "hardware/kit/common/drivers/display.h"
-//#include "scheduler.h" // Add a reference to your module supporting scheduler events for display update
+#include "scheduler.h" // Add a reference to your module supporting scheduler events for display update
 //#include "timer.h" // Add a reference to your module supporting configuration of underflow events here
 
 
@@ -198,7 +198,7 @@ void displayInit()
 	}
 #if SCHEDULER_SUPPORTS_DISPLAY_UPDATE_EVENT
 #if TIMER_SUPPORTS_1HZ_TIMER_EVENT
-	timerEnable1HzSchedulerEvent(Scheduler_DisplayUpdate);
+//	timerEnable1HzSchedulerEvent(Scheduler_DisplayUpdate);
 #else
 #warning "Timer does not support scheduling 1Hz event.  Please implement for full display support"
 #endif

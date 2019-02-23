@@ -114,6 +114,10 @@ int main(void)
 	// Initialize LETIMER
 	initLETIMER();
 
+	// Initializes LCD display
+	displayInit();
+	displayPrintf(DISPLAY_ROW_NAME, "Server");
+
 	// Setting initial scheduler event as no event
 	TEMP_EVENT.NoEvent = true;
 
@@ -153,7 +157,15 @@ int main(void)
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, MIN_INTERVAL, MAX_INTERVAL, SLAVE_LATENCY, TIMEOUT));
 
 				/* Setting connection flag to start state machine based on external events */
-				ble_connection_flag = true;
+//				ble_connection_flag = true;
+
+//				struct gecko_msg_system_get_bt_address_rsp_t * rsp;
+//				bd_addr addr;
+//
+//				rsp = gecko_cmd_system_get_bt_address();
+//				addr = rsp->address;
+//				displayPrintf(DISPLAY_ROW_BTADDR, "%d", addr);
+
 				break;
 
 			case gecko_evt_gatt_server_characteristic_status_id:
@@ -189,7 +201,7 @@ int main(void)
 
 			/* Case handling all external events */
 			case gecko_evt_system_external_signal_id:
-				if(ble_connection_flag == true){
+//				if(ble_connection_flag == true){
 					// 3 second underflow flag check
 					if (((evt->data.evt_system_external_signal.extsignals) & UF_FLAG) != 0) {
 						TEMP_EVENT.UF_flag = true;
@@ -217,7 +229,7 @@ int main(void)
 						TEMP_EVENT.NoEvent = false;
 						scheduler();
 					}
-				}
+//				}
 		}
  	}
 }

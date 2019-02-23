@@ -8,7 +8,6 @@
 #ifndef SRC_SCHEDULER_H_
 #define SRC_SCHEDULER_H_
 
-//#include "event.h";
 #include "stdbool.h"
 #include "configSLEEP.h"
 #include "log.h"
@@ -17,6 +16,7 @@
 #include "native_gecko.h"
 #include "gatt_db.h"
 #include "infrastructure.h"
+#include "display.h"
 
 void scheduler(void);
 
@@ -34,6 +34,10 @@ struct tempEvents{
 #define COMP1_FLAG 0x02
 #define I2C_TRANSACTION_DONE 0x04
 #define I2C_TRANSACTION_ERROR 0x08
+
+/* Header files required for display */
+#define SCHEDULER_SUPPORTS_DISPLAY_UPDATE_EVENT 1
+#define TIMER_SUPPORTS_1HZ_TIMER_EVENT	1
 
 /* Value passed as gecko external signal after appropriate bit-masking */
 uint32_t ext_evt_status;

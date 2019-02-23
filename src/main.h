@@ -16,6 +16,7 @@
 #include "scheduler.h"
 #include "gecko_ble_errors.h"
 #include "gatt_db.h"
+#include "display.h"
 
 /* Parameters required for setting advertise timing */
 #define ADV_MIN_INTERVAL 400
