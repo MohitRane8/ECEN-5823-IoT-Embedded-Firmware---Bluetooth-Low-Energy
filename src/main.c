@@ -1,7 +1,7 @@
 /************************************************************************
- *	Assignment 5 - HTP BLE Assignment
+ *	Assignment 6 - LCD Integration and Client Command Table
  *	Author: Mohit Rane
- *	Submission Date: February 20th, 2019
+ *	Submission Date: February 27th, 2019
  *
  *	In this assignment, we measure the temperature every 3 seconds
  *	using the inbuilt temperature sensor over I2C. The period is
@@ -10,6 +10,9 @@
  *	The temperature data is sent to the client bluetooth device when
  *	a connection is established. The system only takes temperature
  *	when a connection is made.
+ *
+ *	The temperature data is also displayed on the in-built LCD on server
+ *	side.
  *
  *	ENERGYMODE parameter defined in configSLEEP.h allows the system to
  *	sleep in that particular sleep mode.
@@ -114,9 +117,12 @@ int main(void)
 	// Initialize LETIMER
 	initLETIMER();
 
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 	// Initializes LCD display
+	GPIO_PinOutSet(gpioPortD, 15);
 	displayInit();
 	displayPrintf(DISPLAY_ROW_NAME, "Server");
+#endif
 
 	// Setting initial scheduler event as no event
 	TEMP_EVENT.NoEvent = true;
@@ -130,7 +136,7 @@ int main(void)
 	while(1)
 	{
 		/* Allowing the system to sleep in defined state if there is no event */
-		if(ENERGYMODE > sleepEM0 && TEMP_EVENT.NoEvent == true)
+		if(ENERGYMODE >= sleepEM0 && TEMP_EVENT.NoEvent == true)
 		{
 			/* Blocking until new event arrives */
 			evt = gecko_wait_event();
@@ -157,14 +163,16 @@ int main(void)
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, MIN_INTERVAL, MAX_INTERVAL, SLAVE_LATENCY, TIMEOUT));
 
 				/* Setting connection flag to start state machine based on external events */
-//				ble_connection_flag = true;
+				ble_connection_flag = true;
 
-//				struct gecko_msg_system_get_bt_address_rsp_t * rsp;
-//				bd_addr addr;
-//
-//				rsp = gecko_cmd_system_get_bt_address();
-//				addr = rsp->address;
-//				displayPrintf(DISPLAY_ROW_BTADDR, "%d", addr);
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+				struct gecko_msg_system_get_bt_address_rsp_t * rsp;
+				bd_addr addr;
+
+				rsp = gecko_cmd_system_get_bt_address();
+				addr = rsp->address;
+				displayPrintf(DISPLAY_ROW_BTADDR, "%d", addr.addr);
+#endif
 
 				break;
 
@@ -201,7 +209,7 @@ int main(void)
 
 			/* Case handling all external events */
 			case gecko_evt_system_external_signal_id:
-//				if(ble_connection_flag == true){
+				if(ble_connection_flag == true){
 					// 3 second underflow flag check
 					if (((evt->data.evt_system_external_signal.extsignals) & UF_FLAG) != 0) {
 						TEMP_EVENT.UF_flag = true;
@@ -229,7 +237,7 @@ int main(void)
 						TEMP_EVENT.NoEvent = false;
 						scheduler();
 					}
-//				}
+				}
 		}
  	}
 }

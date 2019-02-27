@@ -17,6 +17,7 @@
 #include "gatt_db.h"
 #include "infrastructure.h"
 #include "display.h"
+#include "em_core.h"
 
 void scheduler(void);
 

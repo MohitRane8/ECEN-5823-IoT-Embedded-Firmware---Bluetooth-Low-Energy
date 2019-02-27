@@ -21,6 +21,8 @@
 enum temp_sensor_state current_state = TEMP_SENSOR_POWER_OFF;
 enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
 
+CORE_DECLARE_IRQ_STATE;
+
 void scheduler(void)
 {
 	/* Scheduler / State Machine
@@ -34,18 +36,22 @@ void scheduler(void)
 		/* Power Off state */
 		case TEMP_SENSOR_POWER_OFF:
 			if(TEMP_EVENT.UF_flag){
+				CORE_ENTER_CRITICAL();
 				TEMP_EVENT.UF_flag = false;
 				TEMP_EVENT.NoEvent = true;
+				CORE_EXIT_CRITICAL();
 
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 				displayUpdate();
+#endif
 
-#if 0
+#if !ECEN5823_INCLUDE_DISPLAY_SUPPORT
 				/* Enabling temperature sensor */
 				GPIO_PinOutSet(gpioPortD, 15);
-#endif
 
 				/* Setting timer for load power management */
 				timerSetEventInUs(80000);
+#endif
 
 				next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
 			}
@@ -57,8 +63,10 @@ void scheduler(void)
 		/* Wait for Power Up state */
 		case TEMP_SENSOR_WAIT_FOR_POWER_UP:
 			if(TEMP_EVENT.COMP1_flag){
+				CORE_ENTER_CRITICAL();
 				TEMP_EVENT.COMP1_flag = false;
 				TEMP_EVENT.NoEvent = true;
+				CORE_EXIT_CRITICAL();
 
 				/* Blocking sleep in EM2 for I2C transfers */
 				SLEEP_SleepBlockBegin(sleepEM2);
@@ -76,8 +84,10 @@ void scheduler(void)
 		/* Wait for I2C Write Complete state */
 		case TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE:
 			if(TEMP_EVENT.I2CTransactionDone){
+				CORE_ENTER_CRITICAL();
 				TEMP_EVENT.I2CTransactionDone = false;
 				TEMP_EVENT.NoEvent = true;
+				CORE_EXIT_CRITICAL();
 
 				/* Reading temperature from temperature sensor via I2C */
 				tempSensorStartI2CRead();
@@ -86,43 +96,47 @@ void scheduler(void)
 			}
 
 			if(TEMP_EVENT.I2CTransactionError){
+				CORE_ENTER_CRITICAL();
 				TEMP_EVENT.I2CTransactionError = false;
 				TEMP_EVENT.NoEvent = true;
+				CORE_EXIT_CRITICAL();
 
 				/* Ending sleep block after unsuccessful I2C transaction */
 				SLEEP_SleepBlockEnd(sleepEM2);
 
-#if 0
+#if !ECEN5823_INCLUDE_DISPLAY_SUPPORT
 				/* Turning off temperature sensor */
 				GPIO_PinOutClear(gpioPortD, 15);
 #endif
 
-				next_state = TEMP_SENSOR_I2C_ERROR;
-			}
-
-			else{
 				LOG_INFO("Error in TEMP_SENSOR_WAIT_FOR_I2C_WRITE_COMPLETE case\n");
+
+				next_state = TEMP_SENSOR_I2C_ERROR;
 			}
 			break;
 
 		/* Wait for I2C Read Complete state */
 		case TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE:
 			if(TEMP_EVENT.I2CTransactionDone){
+				CORE_ENTER_CRITICAL();
 				TEMP_EVENT.I2CTransactionDone = false;
 				TEMP_EVENT.NoEvent = true;
+				CORE_EXIT_CRITICAL();
 
 				/* Ending sleep block after successful I2C transaction */
 				SLEEP_SleepBlockEnd(sleepEM2);
 
+#if !ECEN5823_INCLUDE_DISPLAY_SUPPORT
 				/* Turning off temperature sensor */
 				GPIO_PinOutClear(gpioPortD, 15);
+#endif
 
 				/* Declaring variables for temperature */
 				uint8_t temp[5];				// temperature data buffer to be sent to BLE client
 				uint8_t *p = temp;
 				uint8_t flags = 0x00;   		// flags set as 0 for Celsius, no time stamp and no temperature type.
 				UINT8_TO_BITSTREAM(p, flags);	// Appending flags to data buffer
-				float celtemp;
+				float celtemp=0;
 
 				/* Read temperature via I2C */
 				celtemp = tempConv();
@@ -133,32 +147,39 @@ void scheduler(void)
 				// Sending temperature data to BLE client
 				gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 5, temp);
 
-				displayPrintf(DISPLAY_ROW_TEMPVALUE, "%.3f", celtemp);
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+				displayPrintf(DISPLAY_ROW_TEMPVALUE, "%.2f", celtemp);
+#endif
 
 				next_state = TEMP_SENSOR_POWER_OFF;
 			}
 
 			if(TEMP_EVENT.I2CTransactionError){
+				CORE_ENTER_CRITICAL();
 				TEMP_EVENT.I2CTransactionError = false;
 				TEMP_EVENT.NoEvent = true;
+				CORE_EXIT_CRITICAL();
 
 				/* Ending sleep block after unsuccessful I2C transaction */
 				SLEEP_SleepBlockEnd(sleepEM2);
 
+#if !ECEN5823_INCLUDE_DISPLAY_SUPPORT
 				/* Turning off temperature sensor */
 				GPIO_PinOutClear(gpioPortD, 15);
+#endif
+
+				LOG_INFO("Error in TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE case\n");
 
 				next_state = TEMP_SENSOR_I2C_ERROR;
-			}
-
-			else{
-				LOG_INFO("Error in TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE case\n");
 			}
 			break;
 
 		/* Error state */
 		case TEMP_SENSOR_I2C_ERROR:
+			CORE_ENTER_CRITICAL();
 			TEMP_EVENT.NoEvent = true;
+			CORE_EXIT_CRITICAL();
+
 			LOG_INFO("ERROR\n");
 			next_state = TEMP_SENSOR_POWER_OFF;
 	}
