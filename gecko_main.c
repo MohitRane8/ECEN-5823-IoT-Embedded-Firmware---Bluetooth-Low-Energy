@@ -38,6 +38,9 @@
 #include "bspconfig.h"
 #endif
 
+/* Display LCD headers */
+#include "src/display.h"
+
 /***********************************************************************************************//**
  * @addtogroup Application
  * @{
@@ -92,6 +95,13 @@ bool gecko_update(struct gecko_cmd_packet* evt)
 
         /* Turning the connection flag to stop the system from taking temperature */
         ble_connection_flag = false;
+
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+        displayPrintf(DISPLAY_ROW_BTADDR, "");
+        displayPrintf(DISPLAY_ROW_TEMPVALUE, "");
+        displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
+#endif
+
         break;
 
       /* Events related to OTA upgrading

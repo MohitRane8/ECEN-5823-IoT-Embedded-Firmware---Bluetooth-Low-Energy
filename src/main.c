@@ -156,6 +156,11 @@ int main(void)
 
 		        /* Start general advertising and enable connections. */
 		    	  BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
+
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+		    	  displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
+#endif
+
 		        break;
 
 			case gecko_evt_le_connection_opened_id:
@@ -172,6 +177,7 @@ int main(void)
 				rsp = gecko_cmd_system_get_bt_address();
 				addr = rsp->address;
 				displayPrintf(DISPLAY_ROW_BTADDR, "%d", addr.addr);
+				displayPrintf(DISPLAY_ROW_CONNECTION, "Connected");
 #endif
 
 				break;
