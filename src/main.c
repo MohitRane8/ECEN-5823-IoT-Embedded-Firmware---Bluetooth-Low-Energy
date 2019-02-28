@@ -172,11 +172,11 @@ int main(void)
 
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 				struct gecko_msg_system_get_bt_address_rsp_t * rsp;
-				bd_addr addr;
+//				bd_addr addr;
 
 				rsp = gecko_cmd_system_get_bt_address();
-				addr = rsp->address;
-				displayPrintf(DISPLAY_ROW_BTADDR, "%d", addr.addr);
+//				addr = rsp->address;
+				displayPrintf(DISPLAY_ROW_BTADDR, "%d", rsp->address);
 				displayPrintf(DISPLAY_ROW_CONNECTION, "Connected");
 #endif
 
