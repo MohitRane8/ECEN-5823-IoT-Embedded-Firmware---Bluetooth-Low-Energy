@@ -1,5 +1,5 @@
 /************************************************************************
- *	Assignment 6 - LCD Integration and Client Command Table
+ *	Assignment 7 - LCD Integration and Client Command Table
  *	Author: Mohit Rane
  *	Submission Date: February 27th, 2019
  *
