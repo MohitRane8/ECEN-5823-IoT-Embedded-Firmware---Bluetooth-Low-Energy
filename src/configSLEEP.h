@@ -9,7 +9,7 @@
 #define SRC_CONFIGSLEEP_H_
 
 /* Defines the energy mode that the system will sleep in */
-#define ENERGYMODE 0
+#define ENERGYMODE 2
 
 #include "sleep.h"
 

@@ -119,7 +119,7 @@ int main(void)
 
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 	// Initializes LCD display
-	GPIO_PinOutSet(gpioPortD, 15);
+	GPIO_PinOutSet(gpioPortD, 15);					// not needed I guess
 	displayInit();
 	displayPrintf(DISPLAY_ROW_NAME, "Server");
 #endif
