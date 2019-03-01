@@ -38,6 +38,9 @@
 #include "bspconfig.h"
 #endif
 
+/* Server/Client header */
+#include "src/ble_device_type.h"
+
 /* Display LCD headers */
 #include "src/display.h"
 
@@ -81,6 +84,7 @@ bool gecko_update(struct gecko_cmd_packet* evt)
         break;
 #endif
 
+#if 0
       case gecko_evt_le_connection_closed_id:
 
         /* Check if need to boot to dfu mode */
@@ -103,6 +107,8 @@ bool gecko_update(struct gecko_cmd_packet* evt)
 #endif
 
         break;
+
+#endif
 
       /* Events related to OTA upgrading
          ----------------------------------------------------------------------------- */

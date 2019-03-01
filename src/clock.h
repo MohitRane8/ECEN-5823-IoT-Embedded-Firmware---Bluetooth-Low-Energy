@@ -9,6 +9,7 @@
 #define SRC_CLOCK_H_
 
 #include "em_cmu.h"
+#include "ble_device_type.h"
 
 void initCLOCK(void);
 

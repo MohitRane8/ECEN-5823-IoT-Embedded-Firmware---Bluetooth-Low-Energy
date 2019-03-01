@@ -15,6 +15,7 @@
 #include "em_gpio.h"
 #include "i2cspm.h"
 #include "configSLEEP.h"
+#include "ble_device_type.h"
 
 /* Stores raw temperature data */
 uint16_t tempData;

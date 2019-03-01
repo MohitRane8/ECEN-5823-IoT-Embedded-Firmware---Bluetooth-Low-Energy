@@ -18,6 +18,7 @@
 #include "infrastructure.h"
 #include "display.h"
 #include "em_core.h"
+#include "ble_device_type.h"
 
 void scheduler(void);
 

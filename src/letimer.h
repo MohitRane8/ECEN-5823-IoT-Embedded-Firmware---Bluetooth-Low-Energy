@@ -15,6 +15,7 @@
 #include "clock.h"
 #include "log.h"
 #include "scheduler.h"
+#include "ble_device_type.h"
 
 uint32_t timestamp;
 

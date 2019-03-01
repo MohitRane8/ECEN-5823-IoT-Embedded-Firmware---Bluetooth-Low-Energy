@@ -105,24 +105,18 @@ int main(void)
 	// Initialize stack
 	gecko_init(&config);
 
-	// Configure Sleep
-	configSLEEP();
-
 	// Initialize GPIO
 	gpioInit();
+
+#if DEVICE_IS_BLE_SERVER
+	// Configure Sleep
+	configSLEEP();
 
 	// Initialize I2C
 	initI2C();
 
 	// Initialize LETIMER
 	initLETIMER();
-
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-	// Initializes LCD display
-	GPIO_PinOutSet(gpioPortD, 15);					// not needed I guess
-	displayInit();
-	displayPrintf(DISPLAY_ROW_NAME, "Server");
-#endif
 
 	// Setting initial scheduler event as no event
 	TEMP_EVENT.NoEvent = true;
@@ -131,10 +125,19 @@ int main(void)
 #if ((ENERGYMODE == 0) | (ENERGYMODE == 1) | (ENERGYMODE == 2))
 	SLEEP_SleepBlockBegin(ENERGYMODE+1);
 #endif
+#endif
+
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+	// Initializes LCD display
+//	GPIO_PinOutSet(gpioPortD, 15);
+	displayInit();
+	displayPrintf(DISPLAY_ROW_NAME, BLE_DEVICE_TYPE_STRING);
+#endif
 
 	/* Infinite loop */
 	while(1)
 	{
+#if DEVICE_IS_BLE_SERVER
 		/* Allowing the system to sleep in defined state if there is no event */
 		if(ENERGYMODE >= sleepEM0 && TEMP_EVENT.NoEvent == true)
 		{
@@ -160,7 +163,6 @@ int main(void)
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 		    	  displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
 #endif
-
 		        break;
 
 			case gecko_evt_le_connection_opened_id:
@@ -179,7 +181,6 @@ int main(void)
 				displayPrintf(DISPLAY_ROW_BTADDR, "%d", addr.addr);
 				displayPrintf(DISPLAY_ROW_CONNECTION, "Connected");
 #endif
-
 				break;
 
 			case gecko_evt_gatt_server_characteristic_status_id:
@@ -244,6 +245,32 @@ int main(void)
 						scheduler();
 					}
 				}
+				break;
+
+			case gecko_evt_le_connection_closed_id:
+				gecko_cmd_system_set_tx_power(0);
+				/* Restart advertising after client has disconnected */
+				gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
+
+				/* Turning the connection flag to stop the system from taking temperature */
+				ble_connection_flag = false;
+
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+				displayPrintf(DISPLAY_ROW_BTADDR, "");
+				displayPrintf(DISPLAY_ROW_TEMPVALUE, "");
+				displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
+#endif
+				break;
 		}
+
+#else
+
+
+
+
+
+
+
+#endif
  	}
 }
