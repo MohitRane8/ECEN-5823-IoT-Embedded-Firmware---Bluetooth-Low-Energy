@@ -9,7 +9,7 @@
 #define SRC_CLOCK_H_
 
 #include "em_cmu.h"
-#include "ble_device_type.h"
+#include "configSLEEP.h"
 
 void initCLOCK(void);
 

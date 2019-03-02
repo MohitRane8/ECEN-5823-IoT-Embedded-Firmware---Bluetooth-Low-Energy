@@ -7,7 +7,6 @@
  */
 
 #include "clock.h"
-#include "configSLEEP.h"
 
 void initCLOCK(void)
 {

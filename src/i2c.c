@@ -9,7 +9,7 @@
 
 #include "i2c.h"
 
-#if (DEVICE_IS_BLE_SERVER==1)
+#if DEVICE_IS_BLE_SERVER
 
 
 /* Structure for temperature events */
@@ -106,4 +106,4 @@ void I2C0_IRQHandler()
 	}
 }
 
-#endif
+#endif /* DEVICE_IS_BLE_SERVER */

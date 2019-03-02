@@ -17,6 +17,9 @@
  *	ENERGYMODE parameter defined in configSLEEP.h allows the system to
  *	sleep in that particular sleep mode.
  *
+ *	#if DEVICE_IS_BLE_SERVER statements used in main.c, main.h, scheduler.c
+ *	scheduler.h, i2c.c, i2c.h and letimer.c
+ *
  *	References:
  *	1. soc-thermometer Software Example by Silicon Labs
  *	2. https://www.silabs.com/community/wireless/bluetooth/knowledge-
@@ -114,15 +117,15 @@ int main(void)
 	// Initialize GPIO
 	gpioInit();
 
-#if DEVICE_IS_BLE_SERVER
-	// Configure Sleep
-	configSLEEP();
+	// Initialize LETIMER
+	initLETIMER();
 
+#if DEVICE_IS_BLE_SERVER
 	// Initialize I2C
 	initI2C();
 
-	// Initialize LETIMER
-	initLETIMER();
+	// Configure Sleep
+	configSLEEP();
 
 	// Setting initial scheduler event as no event
 	TEMP_EVENT.NoEvent = true;
@@ -131,7 +134,7 @@ int main(void)
 #if ((ENERGYMODE == 0) | (ENERGYMODE == 1) | (ENERGYMODE == 2))
 	SLEEP_SleepBlockBegin(ENERGYMODE+1);
 #endif
-#endif
+#endif /* DEVICE_IS_BLE_SERVER */
 
 #if !DEVICE_IS_BLE_SERVER
 handle.connection = 0;
@@ -325,8 +328,6 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 					(recvAddr.addr[5] == serverBtAddr.addr[5])){
 					gecko_cmd_le_gap_end_procedure();
 					gecko_cmd_le_gap_connect(recvAddr, recvAddrType, le_gap_phy_1m);
-//					displayPrintf(DISPLAY_ROW_BTADDR2, "Received address");
-//					gecko_cmd_le_gap_connect(evt->data.evt_le_gap_scan_response.address, evt->data.evt_le_gap_scan_response.address_type, le_gap_phy_1m);
 				}
 
 				LOG_INFO("EVT -> Scan Response --- Received Address -> %x:%x:%x:%x:%x:%x\n", recvAddr.addr[0], recvAddr.addr[1], recvAddr.addr[2], recvAddr.addr[3], recvAddr.addr[4], recvAddr.addr[5]);
@@ -402,17 +403,11 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 
 					gecko_cmd_gatt_discover_characteristics_by_uuid(handle.connection, handle.service, HTM_characteristic.size, HTM_characteristic.data);
 
-//					displayPrintf(DISPLAY_ROW_BTADDR2, "%d", handle.service);
-//					struct gecko_msg_gatt_discover_characteristics_by_uuid_rsp_t* response;
-//					LOG_INFO("Service response result: %d", response->result);
-//					response = gecko_cmd_gatt_discover_characteristics_by_uuid(handle.connection, handle.service, HTM_characteristic.size, HTM_characteristic.data);
-
 					GATT_state = GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY;
 				}
 
 				else if(GATT_state == GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY){
 					handle.connection = evt->data.evt_gatt_procedure_completed.connection;
-//					gecko_cmd_gatt_read_characteristic_value(handle.connection, handle.characteristic);
 					gecko_cmd_gatt_set_characteristic_notification(handle.connection, handle.characteristic, gatt_indication);
 					GATT_state = GATT_WAITING_FOR_CHARACTERISTIC_VALUE;
 				}

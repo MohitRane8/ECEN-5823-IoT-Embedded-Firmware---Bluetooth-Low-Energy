@@ -8,6 +8,10 @@
 #ifndef SRC_SCHEDULER_H_
 #define SRC_SCHEDULER_H_
 
+#include "ble_device_type.h"
+
+#if DEVICE_IS_BLE_SERVER
+
 #include "stdbool.h"
 #include "configSLEEP.h"
 #include "log.h"
@@ -18,7 +22,6 @@
 #include "infrastructure.h"
 #include "display.h"
 #include "em_core.h"
-#include "ble_device_type.h"
 
 void scheduler(void);
 
@@ -52,5 +55,7 @@ enum temp_sensor_state {
 	TEMP_SENSOR_WAIT_FOR_I2C_READ_COMPLETE,
 	TEMP_SENSOR_I2C_ERROR = -1
 };
+
+#endif /* DEVICE_IS_BLE_SERVER */
 
 #endif /* SRC_SCHEDULER_H_ */

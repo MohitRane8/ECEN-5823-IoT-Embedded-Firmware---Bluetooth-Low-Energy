@@ -9,13 +9,15 @@
 #ifndef SRC_LETIMER_H_
 #define SRC_LETIMER_H_
 
+#include "ble_device_type.h"
+
 #include "em_cmu.h"
 #include "em_letimer.h"
 #include "gpio.h"
 #include "clock.h"
 #include "log.h"
 #include "scheduler.h"
-#include "ble_device_type.h"
+#include "configSLEEP.h"
 
 uint32_t timestamp;
 

@@ -12,7 +12,6 @@
 #define ENERGYMODE 3
 
 #include "sleep.h"
-#include "ble_device_type.h"
 
 void configSLEEP(void);
 

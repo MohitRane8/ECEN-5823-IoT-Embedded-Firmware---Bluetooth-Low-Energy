@@ -11,7 +11,7 @@
 
 #include "ble_device_type.h"
 
-#if (DEVICE_IS_BLE_SERVER==1)
+#if DEVICE_IS_BLE_SERVER
 
 #include "log.h"
 #include "em_i2c.h"
@@ -35,6 +35,6 @@ void tempSensorStartI2CWrite(void);
 void tempSensorStartI2CRead(void);
 float tempConv(void);
 
-#endif
+#endif /* DEVICE_IS_BLE_SERVER */
 
 #endif /* SRC_I2C_H_ */

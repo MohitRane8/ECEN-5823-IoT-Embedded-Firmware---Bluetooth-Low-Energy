@@ -21,7 +21,16 @@
 #include "gecko_ble_errors.h"
 #include "gatt_db.h"
 #include "display.h"
+#include "math.h"
 #include "ble_device_type.h"
+
+/* Parameters for setting connection */
+#define MIN_INTERVAL 60
+#define MAX_INTERVAL 60
+#define SLAVE_LATENCY 3
+#define TIMEOUT 600
+
+#if DEVICE_IS_BLE_SERVER
 
 /* Parameters required for setting advertise timing */
 #define ADV_MIN_INTERVAL 400
@@ -31,11 +40,7 @@
 #define TX_MAX 80
 #define TX_MIN -260
 
-/* Parameters for setting connection */
-#define MIN_INTERVAL 60
-#define MAX_INTERVAL 60
-#define SLAVE_LATENCY 3
-#define TIMEOUT 600
+#endif /* DEVICE_IS_BLE_SERVER */
 
 #if !DEVICE_IS_BLE_SERVER
 
@@ -75,6 +80,6 @@ uint8 recvAddrType;
 
 float gattUint32ToFloat(const uint8_t *value_start_little_endian);
 
-#endif
+#endif /* !DEVICE_IS_BLE_SERVER */
 
 #endif /* SRC_MAIN_H_ */

@@ -17,6 +17,8 @@
 
 #include "scheduler.h"
 
+#if DEVICE_IS_BLE_SERVER
+
 /* Defining the initial state */
 enum temp_sensor_state current_state = TEMP_SENSOR_POWER_OFF;
 enum temp_sensor_state next_state = TEMP_SENSOR_WAIT_FOR_POWER_UP;
@@ -192,3 +194,5 @@ void scheduler(void)
 		current_state = next_state;
 	}
 }
+
+#endif /* DEVICE_IS_BLE_SERVER */

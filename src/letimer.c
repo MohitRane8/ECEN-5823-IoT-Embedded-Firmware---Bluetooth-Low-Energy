@@ -8,11 +8,11 @@
  */
 
 #include "letimer.h"
-#include "configSLEEP.h"
 
-
+#if DEVICE_IS_BLE_SERVER
 /* Initialization of structure for temperature events */
 struct tempEvents TEMP_EVENT;
+#endif /* DEVICE_IS_BLE_SERVER */
 
 /**************************************
  *	LETIMER0 Initialization
@@ -88,15 +88,19 @@ void LETIMER0_IRQHandler(void)
 	/* Setting the event flag */
 	if(reason & LETIMER_IF_UF)
 	{
+#if DEVICE_IS_BLE_SERVER
 		ext_evt_status = UF_FLAG;
 		gecko_external_signal(ext_evt_status);
+#endif /* DEVICE_IS_BLE_SERVER */
 		rollover++;								// increments count every set temperature measurement period
 	}
 
 	if(reason & LETIMER_IF_COMP1)
 	{
+#if DEVICE_IS_BLE_SERVER
 		ext_evt_status = COMP1_FLAG;
 		gecko_external_signal(ext_evt_status);
+#endif /* DEVICE_IS_BLE_SERVER */
 		LETIMER_IntDisable(LETIMER0, LETIMER_IEN_COMP1);
 	}
 }
