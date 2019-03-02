@@ -10,10 +10,14 @@
 #define SRC_MAIN_H_
 
 #include "log.h"
+
+#if DEVICE_IS_BLE_SERVER
 #include "letimer.h"
 #include "configSLEEP.h"
 #include "i2c.h"
 #include "scheduler.h"
+#endif
+
 #include "gecko_ble_errors.h"
 #include "gatt_db.h"
 #include "display.h"
@@ -32,5 +36,36 @@
 #define MAX_INTERVAL 60
 #define SLAVE_LATENCY 3
 #define TIMEOUT 600
+
+#if !DEVICE_IS_BLE_SERVER
+typedef enum gGATT_state{
+	GATT_NO_ACTION,
+	GATT_WAITING_FOR_SERVICE_DISCOVERY,
+	GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY,
+	GATT_WAITING_FOR_CHARACTERISTIC_VALUE,
+	GATT_WAITING_FOR_CHARACTERISTIC_INDICATION
+};
+
+enum gGATT_state GATT_state;
+
+struct allHandles{
+	uint8_t connection;
+	uint32_t service;
+	uint16_t characteristic;
+}handle;
+
+/* A struct to store service UUID info */
+struct myServices{
+	uint8_t data[2];
+	uint8_t size;
+} HTM_service;
+
+/* A struct to store characteristics UUID info */
+struct myCharacteristics{
+	uint8_t data[2];
+	uint8_t size;
+} HTM_characteristic;
+
+#endif
 
 #endif /* SRC_MAIN_H_ */

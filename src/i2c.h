@@ -9,13 +9,16 @@
 #ifndef SRC_I2C_H_
 #define SRC_I2C_H_
 
+#include "ble_device_type.h"
+
+#if (DEVICE_IS_BLE_SERVER==1)
+
 #include "log.h"
 #include "em_i2c.h"
 #include "scheduler.h"
 #include "em_gpio.h"
 #include "i2cspm.h"
 #include "configSLEEP.h"
-#include "ble_device_type.h"
 
 /* Stores raw temperature data */
 uint16_t tempData;
@@ -31,5 +34,7 @@ void initI2C(void);
 void tempSensorStartI2CWrite(void);
 void tempSensorStartI2CRead(void);
 float tempConv(void);
+
+#endif
 
 #endif /* SRC_I2C_H_ */

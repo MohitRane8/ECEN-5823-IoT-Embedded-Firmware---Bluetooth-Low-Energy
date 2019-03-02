@@ -9,6 +9,8 @@
 
 #include "i2c.h"
 
+#if (DEVICE_IS_BLE_SERVER==1)
+
 
 /* Structure for temperature events */
 struct tempEvents TEMP_EVENT;
@@ -103,3 +105,5 @@ void I2C0_IRQHandler()
 		gecko_external_signal(ext_evt_status);
 	}
 }
+
+#endif
