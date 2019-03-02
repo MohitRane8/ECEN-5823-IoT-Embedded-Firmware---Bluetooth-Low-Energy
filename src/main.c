@@ -136,6 +136,14 @@ int main(void)
 	displayPrintf(DISPLAY_ROW_NAME, BLE_DEVICE_TYPE_STRING);
 #endif
 
+#if !DEVICE_IS_BLE_SERVER
+handle.connection = 0;
+handle.service = 0;
+handle.characteristic = 0;
+GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
+#endif
+
+
 	/* Infinite loop */
 	while(1)
 	{
@@ -269,6 +277,7 @@ int main(void)
 #else
 		/* DEVICE IS CLIENT */
 
+
 		evt = gecko_wait_event();
 
 		gecko_update(evt);
@@ -292,18 +301,8 @@ int main(void)
 				 * by the device's radio while in scanning mode.
 				 * 3rd argument: LE 1M PHY
 				 */
-
-				gecko_cmd_le_gap_end_procedure();
-
+				;
 				bd_addr serverBtAddr;
-//				serverBtAddr = SERVER_BT_ADDRESS;
-//				{ 0x60, 0xf2, 0xb5, 0x57, 0x0b, 0x00 };
-//				serverBtAddr.addr[0] = 0x68;
-//				serverBtAddr.addr[1] = 0x34;
-//				serverBtAddr.addr[2] = 0xef;
-//				serverBtAddr.addr[3] = 0x57;
-//				serverBtAddr.addr[4] = 0x0b;
-//				serverBtAddr.addr[5] = 0x00;
 
 				serverBtAddr.addr[0] = 0x3d;
 				serverBtAddr.addr[1] = 0x62;
@@ -311,7 +310,26 @@ int main(void)
 				serverBtAddr.addr[3] = 0x6f;
 				serverBtAddr.addr[4] = 0x0d;
 				serverBtAddr.addr[5] = 0x00;
-				gecko_cmd_le_gap_connect(serverBtAddr, le_gap_address_type_public_identity, le_gap_phy_1m);
+
+				bd_addr recv_addr;
+				uint8 recv_addr_type;
+				recv_addr = evt->data.evt_le_gap_scan_response.address;
+				recv_addr_type = evt->data.evt_le_gap_scan_response.address_type;
+
+				LOG_INFO("Received Address: %x:%x:%x:%x:%x:%x\n", recv_addr.addr[0], recv_addr.addr[1], recv_addr.addr[2], recv_addr.addr[3], recv_addr.addr[4], recv_addr.addr[5]);
+
+				if((recv_addr.addr[0] == serverBtAddr.addr[0]) &
+					(recv_addr.addr[1] == serverBtAddr.addr[1]) &
+					(recv_addr.addr[2] == serverBtAddr.addr[2]) &
+					(recv_addr.addr[3] == serverBtAddr.addr[3]) &
+					(recv_addr.addr[4] == serverBtAddr.addr[4]) &
+					(recv_addr.addr[5] == serverBtAddr.addr[5])){
+					gecko_cmd_le_gap_end_procedure();
+//					gecko_cmd_le_gap_connect(recv_addr, recv_addr_type, le_gap_phy_1m);
+//					displayPrintf(DISPLAY_ROW_BTADDR2, "Received address");
+					gecko_cmd_le_gap_connect(evt->data.evt_le_gap_scan_response.address, evt->data.evt_le_gap_scan_response.address_type, le_gap_phy_1m);
+				}
+
 //				gecko_cmd_le_gap_connect(evt->data.evt_le_gap_scan_response.address, evt->data.evt_le_gap_scan_response.address_type, le_gap_phy_1m);
 
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
@@ -327,27 +345,20 @@ int main(void)
 
 			case gecko_evt_le_connection_opened_id:
 				/* Setting connection parameters for connection */
-//				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, MIN_INTERVAL, MAX_INTERVAL, SLAVE_LATENCY, TIMEOUT));
+				gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, MIN_INTERVAL, MAX_INTERVAL, SLAVE_LATENCY, TIMEOUT);
 
 				handle.connection = evt->data.evt_le_connection_opened.connection;
 
 				/* Health Thermometer service UUID: 1809 */
 				HTM_service.data[0] = 0x09;
 				HTM_service.data[1] = 0x18;
-				HTM_service.size = 16;
+				HTM_service.size = 2;
 
 				gecko_cmd_gatt_discover_primary_services_by_uuid(handle.connection, HTM_service.size, HTM_service.data);
 
 				GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-//				struct gecko_msg_system_get_bt_address_rsp_t * rsp;
-//				bd_addr addr;
-//
-//				rsp = gecko_cmd_system_get_bt_address();
-//				addr = rsp->address;
-//				displayUpdate();
-//				displayPrintf(DISPLAY_ROW_BTADDR, "%x", addr.addr[0], addr.addr[1], addr.addr[2], addr.addr[3], addr.addr[4], addr.addr[5]);
 				displayPrintf(DISPLAY_ROW_CONNECTION, "YYY Connected YYY");
 #endif
 				break;
@@ -358,6 +369,8 @@ int main(void)
 
 			case gecko_evt_gatt_characteristic_id:
 				handle.characteristic = evt->data.evt_gatt_characteristic.characteristic;
+				uint8array uuid = evt->data.evt_gatt_characteristic.uuid;
+				LOG_INFO("Characteristic ID: %d\n", handle.characteristic);
 				break;
 
 			case gecko_evt_gatt_characteristic_value_id:
@@ -366,42 +379,58 @@ int main(void)
 				// do we need to create an event gatt_characteristic_value for this?
 				if(evt->data.evt_gatt_characteristic_value.att_opcode == gatt_handle_value_indication)
 					gecko_cmd_gatt_send_characteristic_confirmation(handle.connection);
+//				evt->data.evt_gatt_characteristic_value.value.data
+				LOG_INFO("char value recvd");
 				break;
 
 			case gecko_evt_gatt_procedure_completed_id:
-				if(GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY){
-					GATT_state = GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY;
+				LOG_INFO("GATT state: %d\n\n", GATT_state);
+				if(GATT_state == GATT_WAITING_FOR_SERVICE_DISCOVERY){
 
-					handle.connection = evt->data.evt_gatt_procedure_completed.connection;
+//					handle.connection = evt->data.evt_gatt_procedure_completed.connection;
 
 					/* Temperature Measurement characteristic UUID: 2A1C */
 					HTM_characteristic.data[0] = 0x1C;
 					HTM_characteristic.data[1] = 0x2A;
-					HTM_characteristic.size = 16;
+					HTM_characteristic.size = 2;
 
-					gecko_cmd_gatt_discover_characteristics_by_uuid(handle.connection, handle.service, HTM_characteristic.size, HTM_characteristic.data);
+//					displayUpdate();
+					displayPrintf(DISPLAY_ROW_BTADDR2, "%d", handle.service);
+
+					struct gecko_msg_gatt_discover_characteristics_by_uuid_rsp_t* response;
+					LOG_INFO("Service response result: %d", response->result);
+					response = gecko_cmd_gatt_discover_characteristics_by_uuid(handle.connection, handle.service, HTM_characteristic.size, HTM_characteristic.data);
+
+					LOG_INFO("service handle: %x\n", handle.service);
+					GATT_state = GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY;
 				}
 
-				else if(GATT_state = GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY){
-					GATT_state = GATT_WAITING_FOR_CHARACTERISTIC_VALUE;
+				else if(GATT_state == GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY){
 
-					handle.connection = evt->data.evt_gatt_procedure_completed.connection;
-					gecko_cmd_gatt_read_characteristic_value(handle.connection, handle.characteristic);
-				}
+//					displayUpdate();
+//					displayPrintf(DISPLAY_ROW_BTADDR2, "Dis characte");
+					displayPrintf(DISPLAY_ROW_CLIENTADDR, "%x", handle.characteristic);
 
-				else if(GATT_state = GATT_WAITING_FOR_CHARACTERISTIC_VALUE){
-					handle.connection = evt->data.evt_gatt_procedure_completed.connection;
+//					handle.connection = evt->data.evt_gatt_procedure_completed.connection;
+//					gecko_cmd_gatt_read_characteristic_value(handle.connection, handle.characteristic);
 					gecko_cmd_gatt_set_characteristic_notification(handle.connection, handle.characteristic, gatt_indication);
+					GATT_state = GATT_WAITING_FOR_CHARACTERISTIC_VALUE;
+				}
+
+				else if(GATT_state == GATT_WAITING_FOR_CHARACTERISTIC_VALUE){
+					displayPrintf(DISPLAY_ROW_CONNECTION, "Handling Indications");
+					handle.connection = evt->data.evt_gatt_procedure_completed.connection;
 					GATT_state = GATT_WAITING_FOR_CHARACTERISTIC_INDICATION;
 				}
 
-				else if(GATT_state = GATT_WAITING_FOR_CHARACTERISTIC_INDICATION){
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-		    	displayPrintf(DISPLAY_ROW_CONNECTION, "Handling Indications");
-		    	displayUpdate();
-#endif
-					GATT_state = GATT_NO_ACTION;
-				}
+//				else if(GATT_state == GATT_WAITING_FOR_CHARACTERISTIC_INDICATION){
+//#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+//					displayPrintf(DISPLAY_ROW_CONNECTION, "Handling Indications");
+//					displayUpdate();
+//#endif
+//					GATT_state = GATT_NO_ACTION;
+////					break;
+//				}
 				break;
 
 			case gecko_evt_le_connection_closed_id:

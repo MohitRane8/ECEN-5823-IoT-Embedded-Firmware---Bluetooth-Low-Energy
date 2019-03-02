@@ -44,15 +44,15 @@ typedef enum gGATT_state{
 	GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY,
 	GATT_WAITING_FOR_CHARACTERISTIC_VALUE,
 	GATT_WAITING_FOR_CHARACTERISTIC_INDICATION
-};
+}gGATT_state_t;
 
-enum gGATT_state GATT_state;
+volatile enum gGATT_state GATT_state;
 
 struct allHandles{
 	uint8_t connection;
 	uint32_t service;
 	uint16_t characteristic;
-}handle;
+}handle = {0};
 
 /* A struct to store service UUID info */
 struct myServices{
