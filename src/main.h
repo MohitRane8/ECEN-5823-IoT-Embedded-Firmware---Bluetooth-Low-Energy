@@ -38,6 +38,8 @@
 #define TIMEOUT 600
 
 #if !DEVICE_IS_BLE_SERVER
+
+/* GATT states required for gatt_procedure_completed event */
 typedef enum gGATT_state{
 	GATT_NO_ACTION,
 	GATT_WAITING_FOR_SERVICE_DISCOVERY,
@@ -48,6 +50,7 @@ typedef enum gGATT_state{
 
 volatile enum gGATT_state GATT_state;
 
+/* Handles required for client in main.c */
 struct allHandles{
 	uint8_t connection;
 	uint32_t service;
@@ -65,6 +68,12 @@ struct myCharacteristics{
 	uint8_t data[2];
 	uint8_t size;
 } HTM_characteristic;
+
+/* Declaring server address and address received by client */
+bd_addr serverBtAddr, recvAddr;
+uint8 recvAddrType;
+
+float gattUint32ToFloat(const uint8_t *value_start_little_endian);
 
 #endif
 
