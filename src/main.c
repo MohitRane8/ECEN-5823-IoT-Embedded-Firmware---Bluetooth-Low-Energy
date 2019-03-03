@@ -3,9 +3,15 @@
  *	Author: Mohit Rane
  *	Submission Date: February 27th, 2019
  *
+ *	FOR TESTING:
+ *	Change #define DEVICE_IS_BLE_SERVER in ble_device_type.h to upload
+ *	code to appropriate device (server/client). Set the server address
+ *	in ble_device_type.h that the client will connect to.
+ *
+ *	DESCRIPTION:
  *	In this assignment, we measure the temperature every 3 seconds
- *	using the inbuilt temperature sensor over I2C. The period is
- *	controlled by the LETIMER.
+ *	using the inbuilt temperature sensor over I2C on server. The period
+ *	is controlled by the LETIMER.
  *
  *	The temperature data is sent to the client bluetooth device when
  *	a connection is established. The system only takes temperature
@@ -20,7 +26,7 @@
  *	#if DEVICE_IS_BLE_SERVER statements used in main.c, main.h, scheduler.c
  *	scheduler.h, i2c.c, i2c.h and letimer.c
  *
- *	References:
+ *	REFERENCES:
  *	1. soc-thermometer Software Example by Silicon Labs
  *	2. https://www.silabs.com/community/wireless/bluetooth/knowledge-
  *	   base.entry.html/2016/10/04/scheduling_applicati-ERXS
@@ -306,32 +312,29 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 
 			/* Scan response case */
 			case gecko_evt_le_gap_scan_response_id:
-				/* This event reports any advertising or scan response packet that is received by the device's radio while in scanning mode */
+				// This event reports any advertising or scan response packet that is received by the device's radio while in scanning mode
 
-				// Hard-coding server address
-				serverBtAddr.addr[0] = 0x3d;
-				serverBtAddr.addr[1] = 0x62;
-				serverBtAddr.addr[2] = 0x08;
-				serverBtAddr.addr[3] = 0x6f;
-				serverBtAddr.addr[4] = 0x0d;
-				serverBtAddr.addr[5] = 0x00;
-
+				// Address and address type of received advertisement
 				recvAddr = evt->data.evt_le_gap_scan_response.address;
 				recvAddrType = evt->data.evt_le_gap_scan_response.address_type;
 
 				// Connecting to server when address matches
-				if((recvAddr.addr[0] == serverBtAddr.addr[0]) &
-					(recvAddr.addr[1] == serverBtAddr.addr[1]) &
-					(recvAddr.addr[2] == serverBtAddr.addr[2]) &
-					(recvAddr.addr[3] == serverBtAddr.addr[3]) &
-					(recvAddr.addr[4] == serverBtAddr.addr[4]) &
-					(recvAddr.addr[5] == serverBtAddr.addr[5])){
+				if((recvAddr.addr[0] == SERVER_BT_ADDRESS(0)) &
+					(recvAddr.addr[1] == SERVER_BT_ADDRESS(1)) &
+					(recvAddr.addr[2] == SERVER_BT_ADDRESS(2)) &
+					(recvAddr.addr[3] == SERVER_BT_ADDRESS(3)) &
+					(recvAddr.addr[4] == SERVER_BT_ADDRESS(4)) &
+					(recvAddr.addr[5] == SERVER_BT_ADDRESS(5))){
+
+					// Stopping discovery of adveritising packets
 					gecko_cmd_le_gap_end_procedure();
+					displayPrintf(DISPLAY_ROW_BTADDR2, "%x:%x:%x:%x:%x:%x", recvAddr.addr[0], recvAddr.addr[1], recvAddr.addr[2], recvAddr.addr[3], recvAddr.addr[4], recvAddr.addr[5]);
+
+					// Connecting to desired server
 					gecko_cmd_le_gap_connect(recvAddr, recvAddrType, le_gap_phy_1m);
 				}
 
 				LOG_INFO("EVT -> Scan Response --- Received Address -> %x:%x:%x:%x:%x:%x\n", recvAddr.addr[0], recvAddr.addr[1], recvAddr.addr[2], recvAddr.addr[3], recvAddr.addr[4], recvAddr.addr[5]);
-
 				break;
 
 			/* Connection open case */
@@ -346,7 +349,7 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				HTM_service.data[1] = 0x18;
 				HTM_service.size = 2;
 
-				// Service discovery command
+				// Discovering remote services
 				gecko_cmd_gatt_discover_primary_services_by_uuid(handle.connection, HTM_service.size, HTM_service.data);
 
 				GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
@@ -360,27 +363,29 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 
 			/* GATT service case */
 			case gecko_evt_gatt_service_id:
+				// Getting service handle
 				handle.service = evt->data.evt_gatt_service.service;
 				LOG_INFO("EVT -> GATT Service --- Service ID: %d\n", handle.service);
 				break;
 
 			/* GATT characteristic case */
 			case gecko_evt_gatt_characteristic_id:
+				// Getting characteristic handle
 				handle.characteristic = evt->data.evt_gatt_characteristic.characteristic;
 				LOG_INFO("EVT -> GATT Characteristic --- Characteristic ID: %d\n", handle.characteristic);
 				break;
 
+			/* Characteristic (temperature) value case */
 			case gecko_evt_gatt_characteristic_value_id:
 				handle.connection = evt->data.evt_gatt_characteristic.connection;
 
-				// do we need to create an event gatt_characteristic_value for this?
+				// Sending confirmation to server when data is received
 				if(evt->data.evt_gatt_characteristic_value.att_opcode == gatt_handle_value_indication)
 					gecko_cmd_gatt_send_characteristic_confirmation(handle.connection);
 
-				float tempServer;
+				// Conversion of received temperature data from uint32 to float
 				uint8_t *tempServerByte = evt->data.evt_gatt_characteristic_value.value.data;
 				tempServerByte++;
-
 				tempServer = gattUint32ToFloat(tempServerByte);
 
 				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
@@ -401,6 +406,7 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 					HTM_characteristic.data[1] = 0x2A;
 					HTM_characteristic.size = 2;
 
+					// Discovering remote characteristics
 					gecko_cmd_gatt_discover_characteristics_by_uuid(handle.connection, handle.service, HTM_characteristic.size, HTM_characteristic.data);
 
 					GATT_state = GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY;
@@ -408,22 +414,27 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 
 				else if(GATT_state == GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY){
 					handle.connection = evt->data.evt_gatt_procedure_completed.connection;
+
+					// Enabling characteristic notification
 					gecko_cmd_gatt_set_characteristic_notification(handle.connection, handle.characteristic, gatt_indication);
 					GATT_state = GATT_WAITING_FOR_CHARACTERISTIC_VALUE;
 				}
 
 				else if(GATT_state == GATT_WAITING_FOR_CHARACTERISTIC_VALUE){
 					displayPrintf(DISPLAY_ROW_CONNECTION, "Handling Indications");
-					GATT_state = GATT_WAITING_FOR_CHARACTERISTIC_INDICATION;
+					GATT_state = GATT_NO_ACTION;
 				}
 				break;
 
 				/* Connection close case */
 			case gecko_evt_le_connection_closed_id:
+				// Starting discovery of advertising packets
 				gecko_cmd_le_gap_start_discovery(le_gap_phy_1m, le_gap_general_discoverable);
 
 				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 		    		displayPrintf(DISPLAY_ROW_CONNECTION, "Discovering");
+		    		displayPrintf(DISPLAY_ROW_BTADDR2, " ");
+		    		displayPrintf(DISPLAY_ROW_TEMPVALUE, " ");
 				#endif
 
 		    	LOG_INFO("EVT -> Connection Close\n\n");

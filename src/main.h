@@ -46,11 +46,10 @@
 
 /* GATT states required for gatt_procedure_completed event */
 typedef enum gGATT_state{
-	GATT_NO_ACTION,
 	GATT_WAITING_FOR_SERVICE_DISCOVERY,
 	GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY,
 	GATT_WAITING_FOR_CHARACTERISTIC_VALUE,
-	GATT_WAITING_FOR_CHARACTERISTIC_INDICATION
+	GATT_NO_ACTION
 }gGATT_state_t;
 
 volatile enum gGATT_state GATT_state;
@@ -77,6 +76,9 @@ struct myCharacteristics{
 /* Declaring server address and address received by client */
 bd_addr serverBtAddr, recvAddr;
 uint8 recvAddrType;
+
+/* Final temperature data to be displayed on LCD */
+float tempServer;
 
 float gattUint32ToFloat(const uint8_t *value_start_little_endian);
 

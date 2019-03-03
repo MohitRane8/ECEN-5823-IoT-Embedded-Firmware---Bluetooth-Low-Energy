@@ -16,8 +16,15 @@
  */
 #define DEVICE_IS_BLE_SERVER 1
 
-#define SERVER_BT_ADDRESS {{ 0x3d, 0x62, 0x08, 0x6f, 0x0d, 0x00 }}
-//const uint8 SERVER_BT_ADDRESS[6] = { 0x3d, 0x62, 0x08, 0x6f, 0x0d, 0x00 };
+/* Set address of desired server to connect to */
+#define SERV_ADDR0 0x3d
+#define SERV_ADDR1 0x62
+#define SERV_ADDR2 0x08
+#define SERV_ADDR3 0x6f
+#define SERV_ADDR4 0x0d
+#define SERV_ADDR5 0x00
+
+#define SERVER_BT_ADDRESS(X) SERV_ADDR##X
 
 #if DEVICE_IS_BLE_SERVER
 #define BUILD_INCLUDES_BLE_SERVER 1

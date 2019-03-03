@@ -19,9 +19,7 @@ uint32_t loggerGetTimestamp(void)
 	// Getting the current timer CNT value
 	uint32_t cntValue = LETIMER_CounterGet(LETIMER0);
 
-	uint32_t value = (rollover*3000)+((49152-cntValue)*0.061);
-	//return timerGetRunTimeMilliseconds();
-//	return 0;
+	uint32_t value = (rollover*PERIOD_MS)+((49152-cntValue)*0.061);
 	return value;
 }
 
