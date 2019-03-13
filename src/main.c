@@ -174,8 +174,8 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 		switch BGLIB_MSG_ID(evt->header) {
 
 			case gecko_evt_system_boot_id:
-				// Delete previous bondings
-				gecko_cmd_sm_delete_bondings();
+//				// Delete previous bondings
+//				gecko_cmd_sm_delete_bondings();
 
 				// Configuring the security settings
 				gecko_cmd_sm_configure(0x01, sm_io_capability_displayyesno);
@@ -310,18 +310,21 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				if (((evt->data.evt_system_external_signal.extsignals) & PB0_FLAG) != 0) {
 					gecko_cmd_sm_passkey_confirm(passkey_handle, 1);
 
-					/* Enhance the security of a connection to current security requirements */
-					gecko_cmd_sm_increase_security(evt->data.evt_le_connection_opened.connection);
-
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 					displayPrintf(DISPLAY_ROW_PASSKEY, " ");
-					displayPrintf(DISPLAY_ROW_ACTION, "Passkey Confirmed");
+					displayPrintf(DISPLAY_ROW_ACTION, " ");
+//					displayPrintf(DISPLAY_ROW_ACTION, "Passkey Confirmed");
 #endif
 				}
 				break;
 
 			case gecko_evt_le_connection_closed_id:
+				// Delete previous bondings
+				gecko_cmd_sm_delete_bondings();
+//				gecko_cmd_sm_set_bondable_mode(1);
+
 				gecko_cmd_system_set_tx_power(0);
+
 				/* Restart advertising after client has disconnected */
 				gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
 

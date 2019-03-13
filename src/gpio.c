@@ -58,14 +58,16 @@ void GPIO_EVEN_IRQHandler(void)
 
 	/* Clearing all interrupts */
 //	GPIO_IntClear(0x00000000);
-	GPIO->IFC = 0x00000000;
+	GPIO_IntClear(reason);
+//	GPIO->IFC = 0x00000000;
 
 	if(reason & 0x40)
 		gecko_external_signal(PB0_FLAG);
 
 	/* Disabling all interrupts */
 //	GPIO_IntDisable(0x00000000);
-	GPIO->IEN = 0x00000000;
+//	GPIO_IntDisable(reason);
+//	GPIO->IEN = 0x00000000;
 }
 
 void gpioLed0SetOn()
