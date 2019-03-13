@@ -32,6 +32,8 @@
  *	   base.entry.html/2016/10/04/scheduling_applicati-ERXS
  *  3. https://www.silabs.com/community/wireless/bluetooth/forum.topic
  *     .html/bgm121_i_cannot_exp-B8Ae
+ *  4. https://www.silabs.com/community/wireless/bluetooth/forum.topic
+ *     .html/how_to_enable_encryp-rDLW
  ************************************************************************/
 
 /* Board headers */
@@ -172,20 +174,42 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 		switch BGLIB_MSG_ID(evt->header) {
 
 			case gecko_evt_system_boot_id:
+				// Delete previous bondings
+				gecko_cmd_sm_delete_bondings();
+
+				// Configuring the security settings
+				gecko_cmd_sm_configure(0x01, sm_io_capability_displayyesno);
+
+				gecko_cmd_sm_set_bondable_mode(1);
+
 		        /* Set advertising parameters. 100ms advertisement interval.
 		         * The first parameter is advertising set handle
 		         * The next two parameters are minimum and maximum advertising interval, both in
 		         * units of (milliseconds * 1.6).
 		         * The last two parameters are duration and maxevents left as default. */
-		    	  BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_set_advertise_timing(0, ADV_MIN_INTERVAL, ADV_MIN_INTERVAL, 0, 0));
+		    	BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_set_advertise_timing(0, ADV_MIN_INTERVAL, ADV_MIN_INTERVAL, 0, 0));
 
 		        /* Start general advertising and enable connections. */
-		    	  BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
+		    	BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
 
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 		    	  displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
 #endif
 		        break;
+
+			case gecko_evt_sm_confirm_passkey_id:
+				passkey_handle = evt->data.evt_sm_confirm_bonding.connection;
+
+				// Store the passkey for display
+				sprintf(passkey, "%lu", evt->data.evt_sm_passkey_display.passkey);
+
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+		    	  displayPrintf(DISPLAY_ROW_PASSKEY, "Passkey: %s", passkey);
+		    	  displayPrintf(DISPLAY_ROW_ACTION, "Confirm with PB0");
+#endif
+		    	// User can confirm the passkey by pressing the PB0 button
+		    	// Button press handled in interrupt
+		    	break;
 
 			case gecko_evt_le_connection_opened_id:
 				/* Setting connection parameters for connection */
@@ -193,6 +217,9 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 
 				/* Setting connection flag to start state machine based on external events */
 				ble_connection_flag = true;
+
+				/* Enhance the security of a connection to current security requirements */
+				gecko_cmd_sm_increase_security(evt->data.evt_le_connection_opened.connection);
 
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 				struct gecko_msg_system_get_bt_address_rsp_t * rsp;
@@ -202,6 +229,18 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				addr = rsp->address;
 				displayPrintf(DISPLAY_ROW_BTADDR, "%x:%x:%x:%x:%x:%x", addr.addr[0],addr.addr[1],addr.addr[2],addr.addr[3],addr.addr[4],addr.addr[5]);
 				displayPrintf(DISPLAY_ROW_CONNECTION, "Connected");
+#endif
+				break;
+
+			case gecko_evt_sm_bonded_id:
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+				displayPrintf(DISPLAY_ROW_CONNECTION, "Bonded");
+#endif
+				break;
+
+			case gecko_evt_sm_bonding_failed_id:
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+				displayPrintf(DISPLAY_ROW_CONNECTION, "Bonding Failed");
 #endif
 				break;
 
@@ -267,6 +306,18 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 						scheduler();
 					}
 				}
+
+				if (((evt->data.evt_system_external_signal.extsignals) & PB0_FLAG) != 0) {
+					gecko_cmd_sm_passkey_confirm(passkey_handle, 1);
+
+					/* Enhance the security of a connection to current security requirements */
+					gecko_cmd_sm_increase_security(evt->data.evt_le_connection_opened.connection);
+
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+					displayPrintf(DISPLAY_ROW_PASSKEY, " ");
+					displayPrintf(DISPLAY_ROW_ACTION, "Passkey Confirmed");
+#endif
+				}
 				break;
 
 			case gecko_evt_le_connection_closed_id:
@@ -278,8 +329,10 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				ble_connection_flag = false;
 
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-				displayPrintf(DISPLAY_ROW_BTADDR, "");
-				displayPrintf(DISPLAY_ROW_TEMPVALUE, "");
+				displayPrintf(DISPLAY_ROW_BTADDR, " ");
+				displayPrintf(DISPLAY_ROW_TEMPVALUE, " ");
+				displayPrintf(DISPLAY_ROW_PASSKEY, " ");
+				displayPrintf(DISPLAY_ROW_ACTION, " ");
 				displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
 #endif
 				break;

@@ -39,6 +39,7 @@ struct tempEvents{
 #define COMP1_FLAG 0x02
 #define I2C_TRANSACTION_DONE 0x04
 #define I2C_TRANSACTION_ERROR 0x08
+#define PB0_FLAG 0x10
 
 /* Header files required for display */
 #define SCHEDULER_SUPPORTS_DISPLAY_UPDATE_EVENT 1

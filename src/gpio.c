@@ -26,6 +26,46 @@ void gpioInit()
 //	GPIO_DriveStrengthSet(LED1_port, gpioDriveStrengthWeakAlternateStrong);
 	GPIO_DriveStrengthSet(LED1_port, gpioDriveStrengthWeakAlternateWeak);
 	GPIO_PinModeSet(LED1_port, LED1_pin, gpioModePushPull, false);
+
+	/* PB0 passkey confirmation button configuration */
+	GPIO_PinModeSet(PB0_PORT, PB0_PIN, gpioModeInputPull, true);
+
+	/* Configuring PB0 for falling edge and enabling its interrupt */
+	GPIO_IntConfig(PB0_PORT, PB0_PIN, false, true, true);
+
+	/* Enabling GPIO in NVIC */
+//	NVIC_EnableIRQ(GPIO_ODD_IRQn);
+	NVIC_EnableIRQ(GPIO_EVEN_IRQn);
+}
+
+//void GPIO_ODD_IRQHandler(void)
+//{
+//	uint32_t reason = GPIO_IntGet();
+//
+//	/* Clearing all interrupts */
+//	GPIO_IntClear(0x00000000);
+//
+//	if(reason & 0x40)
+//		gecko_external_signal(PB0_FLAG);
+//
+//	/* Disabling all interrupts */
+//	GPIO_IntDisable(0x00000000);
+//}
+
+void GPIO_EVEN_IRQHandler(void)
+{
+	uint32_t reason = GPIO_IntGet();
+
+	/* Clearing all interrupts */
+//	GPIO_IntClear(0x00000000);
+	GPIO->IFC = 0x00000000;
+
+	if(reason & 0x40)
+		gecko_external_signal(PB0_FLAG);
+
+	/* Disabling all interrupts */
+//	GPIO_IntDisable(0x00000000);
+	GPIO->IEN = 0x00000000;
 }
 
 void gpioLed0SetOn()

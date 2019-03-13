@@ -40,6 +40,9 @@
 #define TX_MAX 80
 #define TX_MIN -260
 
+char passkey[32];
+uint8_t passkey_handle;
+
 #endif /* DEVICE_IS_BLE_SERVER */
 
 #if !DEVICE_IS_BLE_SERVER
