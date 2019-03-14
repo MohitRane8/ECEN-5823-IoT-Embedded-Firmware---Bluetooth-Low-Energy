@@ -34,38 +34,25 @@ void gpioInit()
 	GPIO_IntConfig(PB0_PORT, PB0_PIN, true, true, true);
 
 	/* Enabling GPIO in NVIC */
-//	NVIC_EnableIRQ(GPIO_ODD_IRQn);
 	NVIC_EnableIRQ(GPIO_EVEN_IRQn);
 }
-
-//void GPIO_ODD_IRQHandler(void)
-//{
-//	uint32_t reason = GPIO_IntGet();
-//
-//	/* Clearing all interrupts */
-//	GPIO_IntClear(0x00000000);
-//
-//	if(reason & 0x40)
-//		gecko_external_signal(PB0_FLAG);
-//
-//	/* Disabling all interrupts */
-//	GPIO_IntDisable(0x00000000);
-//}
 
 void GPIO_EVEN_IRQHandler(void)
 {
 	uint32_t reason = GPIO_IntGet();
 
 	/* Clearing all interrupts */
-//	GPIO_IntClear(0x00000000);
 	GPIO_IntClear(reason);
+
+	// the following statement also works
 //	GPIO->IFC = 0x00000000;
 
+	// if interrupt came from PB0, send gecko external signal
 	if(reason & 0x40)
 		gecko_external_signal(PB0_FLAG);
 
+	// not disabling interrupts as button presses are needed
 	/* Disabling all interrupts */
-//	GPIO_IntDisable(0x00000000);
 //	GPIO_IntDisable(reason);
 //	GPIO->IEN = 0x00000000;
 }

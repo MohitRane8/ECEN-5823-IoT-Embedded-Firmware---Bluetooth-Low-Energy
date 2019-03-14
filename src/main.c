@@ -1,7 +1,7 @@
 /************************************************************************
- *	Assignment 7 - Bluetooth BLE Client
+ *	Assignment 8 - Server MITM and Numeric Pairing Plus Client Command Table
  *	Author: Mohit Rane
- *	Submission Date: February 27th, 2019
+ *	Submission Date: March 13th, 2019
  *
  *	FOR TESTING:
  *	Change #define DEVICE_IS_BLE_SERVER in ble_device_type.h to upload
@@ -22,6 +22,10 @@
  *
  *	ENERGYMODE parameter defined in configSLEEP.h allows the system to
  *	sleep in that particular sleep mode.
+ *
+ *	Adds MITM protection and numeric protection. There is an unknown service
+ *	and characteristic which is encrypted and it shows the PB0 button press
+ *	status.
  *
  *	#if DEVICE_IS_BLE_SERVER statements used in main.c, main.h, scheduler.c
  *	scheduler.h, i2c.c, i2c.h and letimer.c
@@ -177,9 +181,10 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				// Delete previous bondings
 				gecko_cmd_sm_delete_bondings();
 
-				// Configuring the security settings
+				// Configuring the security settings with MITM protection
 				gecko_cmd_sm_configure(0x01, sm_io_capability_displayyesno);
 
+				// Configuring the device to accept new bondings
 				gecko_cmd_sm_set_bondable_mode(1);
 
 		        /* Set advertising parameters. 100ms advertisement interval.
@@ -307,9 +312,12 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				if (((evt->data.evt_system_external_signal.extsignals) & PB0_FLAG) != 0) {
 					static uint8_t first_time_press = 1;
 
+					// when button is pressed first time for passkey confirmation
 					if(first_time_press == 1)
 					{
 						first_time_press = 0;
+
+						// confirming passkey
 						gecko_cmd_sm_passkey_confirm(passkey_handle, 1);
 
 						LOG_INFO("PASSKEY CONFIRMED\n");
@@ -320,39 +328,39 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 #endif
 					}
 
+					// successive presses for sending button state indication to app
 					else if(first_time_press == 0)
 					{
 						LOG_INFO("ITS GOING IN\n");
 
+						// array to store value that needs to be sent
 						uint8_t pinStatus[1];
 						uint8_t flags;
 						uint8_t *p = pinStatus;
 
-						// for falling edge
-						if(GPIO_PinInGet(PB0_PORT, PB0_PIN) == 0)
-						{
-							LOG_INFO("FALLING EDGE\n");
-							flags = 0;
-							UINT8_TO_BITSTREAM(p, flags);
-							BTSTACK_CHECK_RESPONSE(gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_button_state, 1, pinStatus));
-						}
-
 						// for rising edge
-						else if(GPIO_PinInGet(PB0_PORT, PB0_PIN) == 1)
+						if(GPIO_PinInGet(PB0_PORT, PB0_PIN) == 0)
 						{
 							LOG_INFO("RISING EDGE\n");
 							flags = 1;
 							UINT8_TO_BITSTREAM(p, flags);
-							BTSTACK_CHECK_RESPONSE(gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_button_state, 1, pinStatus));
 						}
+
+						// for falling edge
+						else if(GPIO_PinInGet(PB0_PORT, PB0_PIN) == 1)
+						{
+							LOG_INFO("FALLING EDGE\n");
+							flags = 0;
+							UINT8_TO_BITSTREAM(p, flags);
+						}
+
+						// sending characteristic notification
+						BTSTACK_CHECK_RESPONSE(gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_button_state, 1, pinStatus));
 					}
 				}
 				break;
 
 			case gecko_evt_le_connection_closed_id:
-				// Delete previous bondings
-				gecko_cmd_sm_delete_bondings();
-
 				gecko_cmd_system_set_tx_power(0);
 
 				/* Restart advertising after client has disconnected */
@@ -368,6 +376,8 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				displayPrintf(DISPLAY_ROW_ACTION, " ");
 				displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
 #endif
+				// Delete previous bondings
+				gecko_cmd_sm_delete_bondings();
 				break;
 		}
 
