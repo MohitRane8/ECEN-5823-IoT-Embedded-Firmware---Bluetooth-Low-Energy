@@ -218,9 +218,6 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				/* Setting connection flag to start state machine based on external events */
 				ble_connection_flag = true;
 
-				/* Enhance the security of a connection to current security requirements */
-				gecko_cmd_sm_increase_security(evt->data.evt_le_connection_opened.connection);
-
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 				struct gecko_msg_system_get_bt_address_rsp_t * rsp;
 				bd_addr addr;
@@ -308,20 +305,53 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				}
 
 				if (((evt->data.evt_system_external_signal.extsignals) & PB0_FLAG) != 0) {
-					gecko_cmd_sm_passkey_confirm(passkey_handle, 1);
+					static uint8_t first_time_press = 1;
+
+					if(first_time_press == 1)
+					{
+						first_time_press = 0;
+						gecko_cmd_sm_passkey_confirm(passkey_handle, 1);
+
+						LOG_INFO("PASSKEY CONFIRMED\n");
 
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-					displayPrintf(DISPLAY_ROW_PASSKEY, " ");
-					displayPrintf(DISPLAY_ROW_ACTION, " ");
-//					displayPrintf(DISPLAY_ROW_ACTION, "Passkey Confirmed");
+						displayPrintf(DISPLAY_ROW_PASSKEY, " ");
+						displayPrintf(DISPLAY_ROW_ACTION, " ");
 #endif
+					}
+
+					else if(first_time_press == 0)
+					{
+						LOG_INFO("ITS GOING IN\n");
+
+						uint8_t pinStatus;
+						uint8_t value;
+						uint8_t *p = &pinStatus;
+
+						// for falling edge
+						if(GPIO_PinInGet(PB0_PORT, PB0_PIN) == 0)
+						{
+							LOG_INFO("FALLING EDGE\n");
+							value = 0x01;
+							UINT8_TO_BITSTREAM(p, value);
+							gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_button_state, 1, &value);
+						}
+
+						// for rising edge
+						else if(GPIO_PinInGet(PB0_PORT, PB0_PIN) == 1)
+						{
+							LOG_INFO("RISING EDGE\n");
+							value = 0x00;
+							UINT8_TO_BITSTREAM(p, value);
+							gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_button_state, 1, &value);
+						}
+					}
 				}
 				break;
 
 			case gecko_evt_le_connection_closed_id:
 				// Delete previous bondings
 				gecko_cmd_sm_delete_bondings();
-//				gecko_cmd_sm_set_bondable_mode(1);
 
 				gecko_cmd_system_set_tx_power(0);
 

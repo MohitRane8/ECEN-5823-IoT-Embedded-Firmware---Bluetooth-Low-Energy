@@ -30,8 +30,8 @@ void gpioInit()
 	/* PB0 passkey confirmation button configuration */
 	GPIO_PinModeSet(PB0_PORT, PB0_PIN, gpioModeInputPull, true);
 
-	/* Configuring PB0 for falling edge and enabling its interrupt */
-	GPIO_IntConfig(PB0_PORT, PB0_PIN, false, true, true);
+	/* Configuring PB0 for rising and falling edge and enabling its interrupt */
+	GPIO_IntConfig(PB0_PORT, PB0_PIN, true, true, true);
 
 	/* Enabling GPIO in NVIC */
 //	NVIC_EnableIRQ(GPIO_ODD_IRQn);
