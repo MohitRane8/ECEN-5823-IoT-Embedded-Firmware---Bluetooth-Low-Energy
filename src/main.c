@@ -244,6 +244,8 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 				displayPrintf(DISPLAY_ROW_CONNECTION, "Bonding Failed");
 #endif
+				// Delete previous bondings
+				gecko_cmd_sm_delete_bondings();
 				break;
 
 			case gecko_evt_gatt_server_characteristic_status_id:
@@ -310,8 +312,6 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				}
 
 				if (((evt->data.evt_system_external_signal.extsignals) & PB0_FLAG) != 0) {
-					static uint8_t first_time_press = 1;
-
 					// when button is pressed first time for passkey confirmation
 					if(first_time_press == 1)
 					{
@@ -378,6 +378,9 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 #endif
 				// Delete previous bondings
 				gecko_cmd_sm_delete_bondings();
+
+				// For reconnection, confirm passkey needs to be done again
+				first_time_press = 1;
 				break;
 		}
 

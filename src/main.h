@@ -42,6 +42,7 @@
 
 char passkey[32];
 uint8_t passkey_handle;
+uint8_t first_time_press = 1;
 
 #endif /* DEVICE_IS_BLE_SERVER */
 
