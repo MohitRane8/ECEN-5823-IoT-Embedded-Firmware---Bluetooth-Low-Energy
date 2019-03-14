@@ -174,8 +174,8 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 		switch BGLIB_MSG_ID(evt->header) {
 
 			case gecko_evt_system_boot_id:
-//				// Delete previous bondings
-//				gecko_cmd_sm_delete_bondings();
+				// Delete previous bondings
+				gecko_cmd_sm_delete_bondings();
 
 				// Configuring the security settings
 				gecko_cmd_sm_configure(0x01, sm_io_capability_displayyesno);
@@ -324,26 +324,26 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 					{
 						LOG_INFO("ITS GOING IN\n");
 
-						uint8_t pinStatus;
-						uint8_t value;
-						uint8_t *p = &pinStatus;
+						uint8_t pinStatus[1];
+						uint8_t flags;
+						uint8_t *p = pinStatus;
 
 						// for falling edge
 						if(GPIO_PinInGet(PB0_PORT, PB0_PIN) == 0)
 						{
 							LOG_INFO("FALLING EDGE\n");
-							value = 0x01;
-							UINT8_TO_BITSTREAM(p, value);
-							gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_button_state, 1, &value);
+							flags = 0;
+							UINT8_TO_BITSTREAM(p, flags);
+							BTSTACK_CHECK_RESPONSE(gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_button_state, 1, pinStatus));
 						}
 
 						// for rising edge
 						else if(GPIO_PinInGet(PB0_PORT, PB0_PIN) == 1)
 						{
 							LOG_INFO("RISING EDGE\n");
-							value = 0x00;
-							UINT8_TO_BITSTREAM(p, value);
-							gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_button_state, 1, &value);
+							flags = 1;
+							UINT8_TO_BITSTREAM(p, flags);
+							BTSTACK_CHECK_RESPONSE(gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_button_state, 1, pinStatus));
 						}
 					}
 				}

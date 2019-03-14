@@ -135,13 +135,13 @@
     <!--ECEN5823 Encrypted Button State-->
     <characteristic id="button_state" name="ECEN5823 Encrypted Button State" sourceId="custom.type" uuid="00000002-38c8-433e-87ec-652a2d136289">
       <informativeText>Custom characteristic</informativeText>
-      <value length="1" type="hex" variable_length="false"/>
+      <value length="1" type="hex" variable_length="false">0x00</value>
       <properties encrypted_read="true" encrypted_read_requirement="mandatory" indicate="true" indicate_requirement="mandatory"/>
       
       <!--Client Characteristic Configuration-->
-      <descriptor id="client_characteristic_configuration_4" name="Client Characteristic Configuration" sourceId="org.bluetooth.descriptor.gatt.client_characteristic_configuration" uuid="2902">
-        <properties encrypted_read="true" encrypted_read_requirement="mandatory" read="true" read_requirement="mandatory"/>
-        <value length="1" type="hex" variable_length="false"/>
+      <descriptor name="Client Characteristic Configuration" sourceId="custom.type" uuid="70c9f590-af90-4e52-a51c-ff229b6a9a0c">
+        <properties encrypted_read="true" encrypted_read_requirement="mandatory"/>
+        <value length="1" type="hex" variable_length="false">0x00</value>
       </descriptor>
     </characteristic>
   </service>
