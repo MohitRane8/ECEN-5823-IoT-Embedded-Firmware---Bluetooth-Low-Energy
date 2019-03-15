@@ -161,6 +161,15 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 	displayPrintf(DISPLAY_ROW_NAME, BLE_DEVICE_TYPE_STRING);
 #endif
 
+	// Character array to store the passkey value
+	char passkey[32];
+
+	// Connection handle
+	uint8_t passkey_handle;
+
+	// For first button press to confirm passkey
+	uint8_t first_time_press = 1;
+
 	/* Infinite loop */
 	while(1)
 	{
@@ -179,13 +188,14 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 
 			case gecko_evt_system_boot_id:
 				// Delete previous bondings
-				gecko_cmd_sm_delete_bondings();
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_delete_bondings());
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_flash_ps_erase_all());
 
 				// Configuring the security settings with MITM protection
-				gecko_cmd_sm_configure(0x01, sm_io_capability_displayyesno);
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_configure(0x01, sm_io_capability_displayyesno));
 
 				// Configuring the device to accept new bondings
-				gecko_cmd_sm_set_bondable_mode(1);
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_set_bondable_mode(1));
 
 		        /* Set advertising parameters. 100ms advertisement interval.
 		         * The first parameter is advertising set handle
@@ -198,7 +208,7 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 		    	BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
 
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-		    	  displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
+		    	displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
 #endif
 		        break;
 
@@ -209,8 +219,8 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				sprintf(passkey, "%lu", evt->data.evt_sm_passkey_display.passkey);
 
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-		    	  displayPrintf(DISPLAY_ROW_PASSKEY, "Passkey: %s", passkey);
-		    	  displayPrintf(DISPLAY_ROW_ACTION, "Confirm with PB0");
+		    	displayPrintf(DISPLAY_ROW_PASSKEY, "Passkey: %s", passkey);
+		    	displayPrintf(DISPLAY_ROW_ACTION, "Confirm with PB0");
 #endif
 		    	// User can confirm the passkey by pressing the PB0 button
 		    	// Button press handled in interrupt
@@ -244,8 +254,6 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 				displayPrintf(DISPLAY_ROW_CONNECTION, "Bonding Failed");
 #endif
-				// Delete previous bondings
-				gecko_cmd_sm_delete_bondings();
 				break;
 
 			case gecko_evt_gatt_server_characteristic_status_id:
@@ -274,9 +282,9 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 					tx_power = TX_MAX;
 
 				/* Modifying Tx power in safe way */
-				gecko_cmd_system_halt(1);
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_system_halt(1));
 				gecko_cmd_system_set_tx_power(tx_power);	// Setting transmit power
-				gecko_cmd_system_halt(0);
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_system_halt(0));
 				break;
 
 			/* Case handling all external events */
@@ -318,7 +326,7 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 						first_time_press = 0;
 
 						// confirming passkey
-						gecko_cmd_sm_passkey_confirm(passkey_handle, 1);
+						BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_passkey_confirm(passkey_handle, 1));
 
 						LOG_INFO("PASSKEY CONFIRMED\n");
 
@@ -363,10 +371,10 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 			case gecko_evt_le_connection_closed_id:
 				gecko_cmd_system_set_tx_power(0);
 
-				/* Restart advertising after client has disconnected */
-				gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable);
+				// Restart advertising after client has disconnected
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
 
-				/* Turning the connection flag to stop the system from taking temperature */
+				// Turning the connection flag to stop the system from taking temperature
 				ble_connection_flag = false;
 
 #if ECEN5823_INCLUDE_DISPLAY_SUPPORT
@@ -377,7 +385,8 @@ GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 				displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
 #endif
 				// Delete previous bondings
-				gecko_cmd_sm_delete_bondings();
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_delete_bondings());
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_flash_ps_erase_all());
 
 				// For reconnection, confirm passkey needs to be done again
 				first_time_press = 1;

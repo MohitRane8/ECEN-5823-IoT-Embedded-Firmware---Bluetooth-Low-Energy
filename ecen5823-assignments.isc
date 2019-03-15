@@ -123,10 +123,6 @@ appPlugin: stack_bridge=false
       <informativeText>Custom characteristic</informativeText>
       <value length="1" type="hex" variable_length="false">0x00</value>
       <properties encrypted_read="true" encrypted_read_requirement="mandatory" indicate="true" indicate_requirement="mandatory"/>
-      <descriptor name="Client Characteristic Configuration" sourceId="custom.type" uuid="70c9f590-af90-4e52-a51c-ff229b6a9a0c">
-        <properties encrypted_read="true" encrypted_read_requirement="mandatory"/>
-        <value length="1" type="hex" variable_length="false">0x00</value>
-      </descriptor>
     </characteristic>
   </service>
 </gatt>
