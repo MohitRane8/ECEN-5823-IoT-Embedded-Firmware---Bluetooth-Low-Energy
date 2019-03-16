@@ -59,7 +59,7 @@ struct allHandles{
 	uint8_t connection;
 	uint32_t service;
 	uint16_t characteristic;
-}handle = {0};
+}handle;
 
 /* A struct to store service UUID info */
 struct myServices{
@@ -67,11 +67,21 @@ struct myServices{
 	uint8_t size;
 } HTM_service;
 
+//struct myCustomServices{
+//	uint8_t data[16];
+//	uint8_t size;
+//} PB0_service;
+
 /* A struct to store characteristics UUID info */
 struct myCharacteristics{
 	uint8_t data[2];
 	uint8_t size;
 } HTM_characteristic;
+
+struct myCustomCharacteristics{
+	uint8_t data[16];
+	uint8_t size;
+} PB0_characteristic;
 
 /* Declaring server address and address received by client */
 bd_addr serverBtAddr, recvAddr;

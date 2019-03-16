@@ -14,14 +14,14 @@
  * Set to 1 to configure this build as a BLE server.
  * Set to 0 to configure as a BLE client
  */
-#define DEVICE_IS_BLE_SERVER 1
+#define DEVICE_IS_BLE_SERVER 0
 
 /* Set address of desired server to connect to */
-#define SERV_ADDR0 0x3d
-#define SERV_ADDR1 0x62
-#define SERV_ADDR2 0x08
-#define SERV_ADDR3 0x6f
-#define SERV_ADDR4 0x0d
+#define SERV_ADDR0 0x68
+#define SERV_ADDR1 0x34
+#define SERV_ADDR2 0xef
+#define SERV_ADDR3 0x57
+#define SERV_ADDR4 0x0b
 #define SERV_ADDR5 0x00
 
 #define SERVER_BT_ADDRESS(X) SERV_ADDR##X

@@ -19,6 +19,7 @@
 #include "log.h"
 #include "display.h"
 #include "hardware/kit/common/drivers/display.h"
+#include "main.h"
 #include "scheduler.h" // Add a reference to your module supporting scheduler events for display update
 //#include "timer.h" // Add a reference to your module supporting configuration of underflow events here
 
