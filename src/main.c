@@ -166,6 +166,9 @@ int main(void)
 	uint8_t first_time_press = 1;
 
 #if !DEVICE_IS_BLE_SERVER
+	// Store confirm passkey evt connection handle
+	uint8_t passkey_connection;
+
 	handle.connection = 0;
 	handle.service = 0;
 	handle.characteristic = 0;
@@ -185,9 +188,10 @@ int main(void)
 	HTM_characteristic.size = 2;
 
 	// Encrypted Button Press service UUID: 00000001-38c8-433e-87ec-652a2d136289
-//	uint8_t PB0_service_data[16] = {0x00, 0x00, 0x00, 0x01, 0x38, 0xc8, 0x43, 0x3e, 0x87, 0xec, 0x65, 0x2a, 0x2d, 0x13, 0x62, 0x89};
 	uint8_t PB0_service_data[16] = {0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x01, 0x00, 0x00, 0x00};
 	uint8_t PB0_service_size = 16;
+//	PB0_service.data[16] = {0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x01, 0x00, 0x00, 0x00};
+//	PB0_service.size = 16;
 
 	// Health Thermometer service UUID: 00000002-38c8-433e-87ec-652a2d136289
 	uint8_t PB0_characteristic_data[16] = {0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x02, 0x00, 0x00, 0x00};
@@ -424,46 +428,40 @@ int main(void)
 		gecko_update(evt);
 
 		switch BGLIB_MSG_ID(evt->header) {
-
-			/* System boot case */
 			case gecko_evt_system_boot_id:
-				// Delete previous bondings and configuring security settings
+				// Delete previous bondings, configuring security settings, allowing bondings and starting discovery
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_delete_bondings());
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_flash_ps_erase_all());
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_configure(0x01, sm_io_capability_displayyesno));
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_set_bondable_mode(1));
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_discovery(le_gap_phy_1m, le_gap_general_discoverable));
 
-				// Starting discovery of advertisements
-				gecko_cmd_le_gap_start_discovery(le_gap_phy_1m, le_gap_general_discoverable);
-
+				// Printing client address and connection status
 				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 					struct gecko_msg_system_get_bt_address_rsp_t * rsp;
 					bd_addr addr;
 					rsp = gecko_cmd_system_get_bt_address();
 					addr = rsp->address;
 					displayPrintf(DISPLAY_ROW_BTADDR, "%x:%x:%x:%x:%x:%x", addr.addr[0], addr.addr[1], addr.addr[2], addr.addr[3], addr.addr[4], addr.addr[5]);
-
 					displayPrintf(DISPLAY_ROW_CONNECTION, "Discovering");
 				#endif
 
 		    	LOG_INFO("EVT -> System Boot\n");
 				break;
 
-			/* Scan response case */
-			case gecko_evt_le_gap_scan_response_id:
-				// This event reports any advertising or scan response packet that is received by the device's radio while in scanning mode
 
+			case gecko_evt_le_gap_scan_response_id:
 				// Address and address type of received advertisement
 				recvAddr = evt->data.evt_le_gap_scan_response.address;
 				recvAddrType = evt->data.evt_le_gap_scan_response.address_type;
 
 				// Connecting to server when address matches
 				if((recvAddr.addr[0] == SERVER_BT_ADDRESS(0)) &
-					(recvAddr.addr[1] == SERVER_BT_ADDRESS(1)) &
-					(recvAddr.addr[2] == SERVER_BT_ADDRESS(2)) &
-					(recvAddr.addr[3] == SERVER_BT_ADDRESS(3)) &
-					(recvAddr.addr[4] == SERVER_BT_ADDRESS(4)) &
-					(recvAddr.addr[5] == SERVER_BT_ADDRESS(5))){
+						(recvAddr.addr[1] == SERVER_BT_ADDRESS(1)) &
+						(recvAddr.addr[2] == SERVER_BT_ADDRESS(2)) &
+						(recvAddr.addr[3] == SERVER_BT_ADDRESS(3)) &
+						(recvAddr.addr[4] == SERVER_BT_ADDRESS(4)) &
+						(recvAddr.addr[5] == SERVER_BT_ADDRESS(5))) {
 
 					// Stopping discovery of adveritising packets
 					gecko_cmd_le_gap_end_procedure();
@@ -476,20 +474,18 @@ int main(void)
 				LOG_INFO("EVT -> Scan Response --- Received Address -> %x:%x:%x:%x:%x:%x\n", recvAddr.addr[0], recvAddr.addr[1], recvAddr.addr[2], recvAddr.addr[3], recvAddr.addr[4], recvAddr.addr[5]);
 				break;
 
-			/* Connection open case */
+
 			case gecko_evt_le_connection_opened_id:
-				// Setting connection parameters for connection
-				gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, MIN_INTERVAL, MAX_INTERVAL, SLAVE_LATENCY, TIMEOUT);
-
-//				// Requests to read encrypted parameters
-//				BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_increase_security(evt->data.evt_le_connection_opened.connection));
-
 				handle.connection = evt->data.evt_le_connection_opened.connection;
+
+				// Setting connection parameters for connection
+				gecko_cmd_le_connection_set_parameters(handle.connection, MIN_INTERVAL, MAX_INTERVAL, SLAVE_LATENCY, TIMEOUT);
 
 				// Discovering remote services
 				gecko_cmd_gatt_discover_primary_services_by_uuid(handle.connection, HTM_service.size, HTM_service.data);
 				gattService = 0x01;
 
+				// Setting GATT state for Procedure Complete event
 				GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 
 				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
@@ -499,25 +495,18 @@ int main(void)
 				LOG_INFO("EVT -> Connection Open\n");
 				break;
 
+
 			case gecko_evt_sm_confirm_passkey_id:
-				passkey_handle = evt->data.evt_sm_confirm_passkey.connection;
-				LOG_INFO("Passkey handle:%d", passkey_handle);
-				// Store the passkey for display
-				sprintf(passkey, "%lu", evt->data.evt_sm_passkey_display.passkey);
+				// Storing passkey connection handle
+				passkey_connection = evt->data.evt_sm_confirm_passkey.connection;
 
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-		    	displayPrintf(DISPLAY_ROW_PASSKEY, "Passkey: %s", passkey);
-		    	displayPrintf(DISPLAY_ROW_ACTION, "Confirm with PB0");
-#endif
+				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+					displayPrintf(DISPLAY_ROW_PASSKEY, "Passkey: %d", evt->data.evt_sm_passkey_display.passkey);
+					displayPrintf(DISPLAY_ROW_ACTION, "Confirm with PB0");
+				#endif
 
-		    	while(GPIO_PinInGet(PB0_PORT,PB0_PIN) == 1);
-		    	// confirming passkey
-		    	BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_passkey_confirm(passkey_handle, 1));
-
-		    	LOG_INFO("PASSKEY CONFIRMED\n");
-		    	// User can confirm the passkey by pressing the PB0 button
-		    	// Button press handled in interrupt
 		    	break;
+
 
 			case gecko_evt_sm_bonded_id:
 				handle.connection = evt->data.evt_sm_bonded.connection;
@@ -528,55 +517,55 @@ int main(void)
 
 				GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-				displayPrintf(DISPLAY_ROW_CONNECTION, "Bonded");
-#endif
+				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+					displayPrintf(DISPLAY_ROW_CONNECTION, "Bonded");
+				#endif
 				break;
+
 
 			case gecko_evt_sm_bonding_failed_id:
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-				displayPrintf(DISPLAY_ROW_CONNECTION, "Bonding Failed");
-#endif
+				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+					displayPrintf(DISPLAY_ROW_CONNECTION, "Bonding Failed");
+				#endif
 				break;
 
-			/* GATT service case */
+
 			case gecko_evt_gatt_service_id:
 				// Getting service handle
+				handle.service = evt->data.evt_gatt_service.service;
+
 				if(!memcmp(evt->data.evt_gatt_service.uuid.data, HTM_service.data, 2))
 				{
-					handle.service = evt->data.evt_gatt_service.service;
 					LOG_INFO("EVT -> GATT Service --- HTM --- Service ID: %d\n", handle.service);
 					gattService = 0x01;
 				}
 
 				if(!memcmp(evt->data.evt_gatt_service.uuid.data, PB0_service_data, 16))
 				{
-					handle.service = evt->data.evt_gatt_service.service;
 					LOG_INFO("EVT -> GATT Service --- BUTTON --- Service ID: %d\n", handle.service);
 					gattService = 0x02;
 				}
 				break;
 
-			/* GATT characteristic case */
+
 			case gecko_evt_gatt_characteristic_id:
 				// Getting characteristic handle
+				handle.characteristic = evt->data.evt_gatt_characteristic.characteristic;
+
 				if(!memcmp(evt->data.evt_gatt_characteristic.uuid.data, HTM_characteristic.data, 2))
 				{
-					handle.characteristic = evt->data.evt_gatt_characteristic.characteristic;
 					LOG_INFO("EVT -> GATT Characteristic --- HTM --- Characteristic ID: %d\n", handle.characteristic);
 					gattService = 0x01;
 				}
 
-				// Getting characteristic handle
 				if(!memcmp(evt->data.evt_gatt_characteristic.uuid.data, PB0_characteristic_data, 16))
 				{
-					handle.characteristic = evt->data.evt_gatt_characteristic.characteristic;
 					LOG_INFO("EVT -> GATT Characteristic --- BUTTON --- Characteristic ID: %d\n", handle.characteristic);
 					gattService = 0x02;
 				}
 				break;
 
-			/* Characteristic (temperature) value case */
+
 			case gecko_evt_gatt_characteristic_value_id:
 				handle.connection = evt->data.evt_gatt_characteristic.connection;
 
@@ -584,11 +573,6 @@ int main(void)
 				if(evt->data.evt_gatt_characteristic_value.att_opcode == gatt_handle_value_indication)
 					gecko_cmd_gatt_send_characteristic_confirmation(handle.connection);
 
-				uint8_t htmArr[2] = {0x2A, 0x1C};
-
-//				if(!memcmp(evt->data.evt_gatt_characteristic.uuid.data, htmArr, 2))
-//				if(evt->data.evt_gatt_characteristic.uuid.data == htmArr)
-//				if(evt->data.evt_gatt_characteristic_value.value.data[0] != 0x01)
 				if(evt->data.evt_gatt_characteristic.characteristic == gattdb_temperature_measurement)
 				{
 					// Conversion of received temperature data from uint32 to float
@@ -601,14 +585,15 @@ int main(void)
 					#endif
 				}
 
-//				else if(memcmp(evt->data.evt_gatt_characteristic.uuid.data, PB0_service_data, PB0_service_size) == 0)
 				else if(evt->data.evt_gatt_characteristic.characteristic == gattdb_button_state)
 				{
+					// Getting button data and converting it in required value
 					uint8_t *button_press_byte = evt->data.evt_gatt_characteristic_value.value.data;
 					uint8_t button_press_value = gattUint32ToFloat(button_press_byte);
 
 					LOG_INFO("Button press value: %d\n", button_press_value);
 
+					// Button released state
 					if(button_press_value == 0x00)
 					{
 						#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
@@ -616,6 +601,7 @@ int main(void)
 						#endif
 					}
 
+					// Button pressed state
 					else if(button_press_value == 0x01)
 					{
 						#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
@@ -627,11 +613,12 @@ int main(void)
 				LOG_INFO("EVT -> GATT Characteristic Value --- Temperature: %.2f\n", tempServer);
 				break;
 
-			/* GATT procedure complete case */
+
 			case gecko_evt_gatt_procedure_completed_id:
-				if(gattService == 0x01)
-				{
+				// GATT states for Temperature Service
+				if(gattService == 0x01){
 					LOG_INFO("EVT -> GATT Procedure Complete --- HTM --- GATT State: %d\n", GATT_state);
+
 					if(GATT_state == GATT_WAITING_FOR_SERVICE_DISCOVERY){
 						handle.connection = evt->data.evt_gatt_procedure_completed.connection;
 
@@ -639,7 +626,6 @@ int main(void)
 						gecko_cmd_gatt_discover_characteristics_by_uuid(handle.connection, handle.service, HTM_characteristic.size, HTM_characteristic.data);
 
 						GATT_state = GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY;
-						gattService == 0x01;
 					}
 
 					else if(GATT_state == GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY){
@@ -648,22 +634,21 @@ int main(void)
 						// Enabling characteristic notification
 						gecko_cmd_gatt_set_characteristic_notification(handle.connection, handle.characteristic, gatt_indication);
 						GATT_state = GATT_WAITING_FOR_CHARACTERISTIC_VALUE;
-						gattService == 0x01;
 					}
 
 					else if(GATT_state == GATT_WAITING_FOR_CHARACTERISTIC_VALUE){
 						displayPrintf(DISPLAY_ROW_CONNECTION, "Handling Indications");
 						GATT_state = GATT_NO_ACTION;
-						gattService == 0x01;
+
 						// Requests to read encrypted parameters
 						BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_increase_security(evt->data.evt_gatt_procedure_completed.connection));
-
 					}
 				}
 
-				else if(gattService == 0x02)
-				{
+				// GATT states for Button Pressed/Released Service
+				else if(gattService == 0x02){
 					LOG_INFO("EVT -> GATT Procedure Complete --- BUTTON --- GATT State: %d\n", GATT_state);
+
 					if(GATT_state == GATT_WAITING_FOR_SERVICE_DISCOVERY){
 						handle.connection = evt->data.evt_gatt_procedure_completed.connection;
 
@@ -671,7 +656,6 @@ int main(void)
 						gecko_cmd_gatt_discover_characteristics_by_uuid(handle.connection, handle.service, PB0_characteristic_size, PB0_characteristic_data);
 
 						GATT_state = GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY;
-						gattService == 0x02;
 					}
 
 					else if(GATT_state == GATT_WAITING_FOR_CHARACTERISTICS_DISCOVERY){
@@ -680,44 +664,43 @@ int main(void)
 						// Enabling characteristic notification
 						gecko_cmd_gatt_set_characteristic_notification(handle.connection, handle.characteristic, gatt_indication);
 						GATT_state = GATT_WAITING_FOR_CHARACTERISTIC_VALUE;
-						gattService == 0x02;
 					}
 
 					else if(GATT_state == GATT_WAITING_FOR_CHARACTERISTIC_VALUE){
 						displayPrintf(DISPLAY_ROW_CONNECTION, "Handling Indications");
 						GATT_state = GATT_NO_ACTION;
-						gattService == 0x02;
 					}
 				}
 				break;
 
-				/* Case handling all external events */
-//				case gecko_evt_system_external_signal_id:
-//					if (((evt->data.evt_system_external_signal.extsignals) & PB0_FLAG) != 0) {
-//						// when button is pressed first time for passkey confirmation
-//						if(first_time_press == 1)
-//						{
-//							first_time_press = 0;
-//
-//							// confirming passkey
-//							BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_passkey_confirm(passkey_handle, 1));
-//							LOG_INFO("\nExt Passkey handle:%d\n",passkey_handle);
-//							LOG_INFO("PASSKEY CONFIRMED\n");
-//
-//	#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-//							displayPrintf(DISPLAY_ROW_PASSKEY, " ");
-//							displayPrintf(DISPLAY_ROW_ACTION, " ");
-//	#endif
-//						}
-//					}
 
-				/* Connection close case */
+			case gecko_evt_system_external_signal_id:
+				if (((evt->data.evt_system_external_signal.extsignals) & PB0_FLAG) != 0) {
+
+					// when button is pressed first time for passkey confirmation
+					if(first_time_press == 1)
+					{
+						first_time_press = 0;
+
+						// confirming passkey
+						BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_passkey_confirm(passkey_connection, 1));
+						LOG_INFO("PASSKEY CONFIRMED\n");
+
+						#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+							displayPrintf(DISPLAY_ROW_PASSKEY, " ");
+							displayPrintf(DISPLAY_ROW_ACTION, " ");
+						#endif
+					}
+				}
+				break;
+
+
 			case gecko_evt_le_connection_closed_id:
 				// Starting discovery of advertising packets
 				gecko_cmd_le_gap_start_discovery(le_gap_phy_1m, le_gap_general_discoverable);
 
 				// Delete previous bondings
-//				BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_delete_bondings());
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_delete_bondings());
 
 				// For reconnection, confirm passkey needs to be done again
 				first_time_press = 1;
@@ -726,6 +709,7 @@ int main(void)
 		    		displayPrintf(DISPLAY_ROW_CONNECTION, "Discovering");
 		    		displayPrintf(DISPLAY_ROW_BTADDR2, " ");
 		    		displayPrintf(DISPLAY_ROW_TEMPVALUE, " ");
+		    		displayPrintf(DISPLAY_ROW_ACTION, " ");
 				#endif
 
 		    	LOG_INFO("EVT -> Connection Close\n\n");

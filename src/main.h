@@ -67,10 +67,10 @@ struct myServices{
 	uint8_t size;
 } HTM_service;
 
-//struct myCustomServices{
-//	uint8_t data[16];
-//	uint8_t size;
-//} PB0_service;
+struct myCustomServices{
+	uint8_t data[16];
+	uint8_t size;
+} PB0_service;
 
 /* A struct to store characteristics UUID info */
 struct myCharacteristics{
