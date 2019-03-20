@@ -129,10 +129,10 @@ int main(void)
 	// Initialize GPIO
 	gpioInit();
 
+#if DEVICE_IS_BLE_SERVER
 	// Initialize LETIMER
 	initLETIMER();
 
-#if DEVICE_IS_BLE_SERVER
 	// Initialize I2C
 	initI2C();
 
@@ -160,7 +160,7 @@ int main(void)
 	char passkey[32];
 
 	// Connection handle
-	volatile uint8_t passkey_handle  = 0 ;
+	volatile uint8_t passkey_handle  = 0;
 
 	// For first button press to confirm passkey
 	uint8_t first_time_press = 1;
@@ -190,8 +190,6 @@ int main(void)
 	// Encrypted Button Press service UUID: 00000001-38c8-433e-87ec-652a2d136289
 	uint8_t PB0_service_data[16] = {0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x01, 0x00, 0x00, 0x00};
 	uint8_t PB0_service_size = 16;
-//	PB0_service.data[16] = {0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x01, 0x00, 0x00, 0x00};
-//	PB0_service.size = 16;
 
 	// Health Thermometer service UUID: 00000002-38c8-433e-87ec-652a2d136289
 	uint8_t PB0_characteristic_data[16] = {0x89, 0x62, 0x13, 0x2d, 0x2a, 0x65, 0xec, 0x87, 0x3e, 0x43, 0xc8, 0x38, 0x02, 0x00, 0x00, 0x00};
@@ -367,7 +365,6 @@ int main(void)
 						{
 							LOG_INFO("RISING EDGE\n");
 							flags = 1;
-							UINT8_TO_BITSTREAM(p, flags);
 						}
 
 						// for falling edge
@@ -375,9 +372,9 @@ int main(void)
 						{
 							LOG_INFO("FALLING EDGE\n");
 							flags = 0;
-							UINT8_TO_BITSTREAM(p, flags);
 						}
 
+						UINT8_TO_BITSTREAM(p, flags);
 						// sending characteristic notification
 						BTSTACK_CHECK_RESPONSE(gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_button_state, 1, pinStatus));
 					}
@@ -675,6 +672,7 @@ int main(void)
 
 				DISPLAY_PRINTF(DISPLAY_ROW_CONNECTION, "Discovering");
 				DISPLAY_PRINTF(DISPLAY_ROW_BTADDR2, " ");
+				DISPLAY_PRINTF(DISPLAY_ROW_PASSKEY, " ");
 				DISPLAY_PRINTF(DISPLAY_ROW_TEMPVALUE, " ");
 				DISPLAY_PRINTF(DISPLAY_ROW_ACTION, " ");
 

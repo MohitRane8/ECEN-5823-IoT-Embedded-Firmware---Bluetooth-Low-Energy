@@ -25,10 +25,10 @@
 #include "ble_device_type.h"
 
 /* Parameters for setting connection */
-#define MIN_INTERVAL 60
-#define MAX_INTERVAL 60
-#define SLAVE_LATENCY 3
-#define TIMEOUT 600
+#define MIN_INTERVAL 10
+#define MAX_INTERVAL 10
+#define SLAVE_LATENCY 0
+#define TIMEOUT 20
 
 #if DEVICE_IS_BLE_SERVER
 
