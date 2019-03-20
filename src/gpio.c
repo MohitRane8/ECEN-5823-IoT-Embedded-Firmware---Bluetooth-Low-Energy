@@ -18,6 +18,8 @@
 #define LED1_port gpioPortF
 #define LED1_pin 5
 
+CORE_DECLARE_IRQ_STATE;
+
 void gpioInit()
 {
 //	GPIO_DriveStrengthSet(LED0_port, gpioDriveStrengthWeakAlternateStrong);
@@ -39,6 +41,7 @@ void gpioInit()
 
 void GPIO_EVEN_IRQHandler(void)
 {
+	CORE_ENTER_CRITICAL();
 	uint32_t reason = GPIO_IntGet();
 
 	/* Clearing all interrupts */
@@ -55,6 +58,7 @@ void GPIO_EVEN_IRQHandler(void)
 	/* Disabling all interrupts */
 //	GPIO_IntDisable(reason);
 //	GPIO->IEN = 0x00000000;
+	CORE_EXIT_CRITICAL();
 }
 
 void gpioLed0SetOn()

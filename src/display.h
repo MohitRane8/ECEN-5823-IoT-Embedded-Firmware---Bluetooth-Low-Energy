@@ -32,6 +32,12 @@
 
 #define ECEN5823_INCLUDE_DISPLAY_SUPPORT 1
 
+#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
+#define DISPLAY_PRINTF(lcd_row, msg, ...)	displayPrintf(lcd_row, msg, ##__VA_ARGS__)
+#else
+#define DISPLAY_PRINTF(lcd_row, msg, ...)
+#endif
+
 #include "glib.h"
 
 /**

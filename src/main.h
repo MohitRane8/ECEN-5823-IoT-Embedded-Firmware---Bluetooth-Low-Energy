@@ -92,6 +92,7 @@ float tempServer;
 
 float gattUint32ToFloat(const uint8_t *value_start_little_endian);
 
+
 #endif /* !DEVICE_IS_BLE_SERVER */
 
 #endif /* SRC_MAIN_H_ */

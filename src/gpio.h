@@ -13,6 +13,7 @@
 #include "displayls013b7dh03config.h"
 
 #include "scheduler.h"
+#include "em_core.h"
 
 /* Header files required for display */
 #define GPIO_SET_DISPLAY_EXT_COMIN_IMPLEMENTED 	1
@@ -27,7 +28,6 @@ void gpioLed0SetOn();
 void gpioLed0SetOff();
 void gpioLed1SetOn();
 void gpioLed1SetOff();
-//void GPIO_ODD_IRQHandler(void);
 void GPIO_EVEN_IRQHandler(void);
 
 /* Functions required for display */

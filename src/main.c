@@ -235,9 +235,7 @@ int main(void)
 		        /* Start general advertising and enable connections. */
 		    	BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
 
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-		    	displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
-#endif
+		    	DISPLAY_PRINTF(DISPLAY_ROW_CONNECTION, "Advertising");
 		        break;
 
 			case gecko_evt_sm_confirm_passkey_id:
@@ -246,10 +244,8 @@ int main(void)
 				// Store the passkey for display
 				sprintf(passkey, "%lu", evt->data.evt_sm_passkey_display.passkey);
 
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-		    	displayPrintf(DISPLAY_ROW_PASSKEY, "Passkey: %s", passkey);
-		    	displayPrintf(DISPLAY_ROW_ACTION, "Confirm with PB0");
-#endif
+				DISPLAY_PRINTF(DISPLAY_ROW_PASSKEY, "Passkey: %s", passkey);
+		    	DISPLAY_PRINTF(DISPLAY_ROW_ACTION, "Confirm with PB0");
 		    	// User can confirm the passkey by pressing the PB0 button
 		    	// Button press handled in interrupt
 		    	break;
@@ -261,27 +257,21 @@ int main(void)
 				/* Setting connection flag to start state machine based on external events */
 				ble_connection_flag = true;
 
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
 				struct gecko_msg_system_get_bt_address_rsp_t * rsp;
 				bd_addr addr;
 
 				rsp = gecko_cmd_system_get_bt_address();
 				addr = rsp->address;
-				displayPrintf(DISPLAY_ROW_BTADDR, "%x:%x:%x:%x:%x:%x", addr.addr[0],addr.addr[1],addr.addr[2],addr.addr[3],addr.addr[4],addr.addr[5]);
-				displayPrintf(DISPLAY_ROW_CONNECTION, "Connected");
-#endif
+				DISPLAY_PRINTF(DISPLAY_ROW_BTADDR, "%x:%x:%x:%x:%x:%x", addr.addr[0],addr.addr[1],addr.addr[2],addr.addr[3],addr.addr[4],addr.addr[5]);
+				DISPLAY_PRINTF(DISPLAY_ROW_CONNECTION, "Connected");
 				break;
 
 			case gecko_evt_sm_bonded_id:
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-				displayPrintf(DISPLAY_ROW_CONNECTION, "Bonded");
-#endif
+				DISPLAY_PRINTF(DISPLAY_ROW_CONNECTION, "Bonded");
 				break;
 
 			case gecko_evt_sm_bonding_failed_id:
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-				displayPrintf(DISPLAY_ROW_CONNECTION, "Bonding Failed");
-#endif
+				DISPLAY_PRINTF(DISPLAY_ROW_CONNECTION, "Bonding Failed");
 				break;
 
 			case gecko_evt_gatt_server_characteristic_status_id:
@@ -358,10 +348,8 @@ int main(void)
 
 						LOG_INFO("PASSKEY CONFIRMED\n");
 
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-						displayPrintf(DISPLAY_ROW_PASSKEY, " ");
-						displayPrintf(DISPLAY_ROW_ACTION, " ");
-#endif
+						DISPLAY_PRINTF(DISPLAY_ROW_PASSKEY, " ");
+						DISPLAY_PRINTF(DISPLAY_ROW_ACTION, " ");
 					}
 
 					// successive presses for sending button state indication to app
@@ -405,13 +393,12 @@ int main(void)
 				// Turning the connection flag to stop the system from taking temperature
 				ble_connection_flag = false;
 
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-				displayPrintf(DISPLAY_ROW_BTADDR, " ");
-				displayPrintf(DISPLAY_ROW_TEMPVALUE, " ");
-				displayPrintf(DISPLAY_ROW_PASSKEY, " ");
-				displayPrintf(DISPLAY_ROW_ACTION, " ");
-				displayPrintf(DISPLAY_ROW_CONNECTION, "Advertising");
-#endif
+				DISPLAY_PRINTF(DISPLAY_ROW_BTADDR, " ");
+				DISPLAY_PRINTF(DISPLAY_ROW_TEMPVALUE, " ");
+				DISPLAY_PRINTF(DISPLAY_ROW_PASSKEY, " ");
+				DISPLAY_PRINTF(DISPLAY_ROW_ACTION, " ");
+				DISPLAY_PRINTF(DISPLAY_ROW_CONNECTION, "Advertising");
+
 				// Delete previous bondings
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_delete_bondings());
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_flash_ps_erase_all());
@@ -437,14 +424,12 @@ int main(void)
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_discovery(le_gap_phy_1m, le_gap_general_discoverable));
 
 				// Printing client address and connection status
-				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-					struct gecko_msg_system_get_bt_address_rsp_t * rsp;
-					bd_addr addr;
-					rsp = gecko_cmd_system_get_bt_address();
-					addr = rsp->address;
-					displayPrintf(DISPLAY_ROW_BTADDR, "%x:%x:%x:%x:%x:%x", addr.addr[0], addr.addr[1], addr.addr[2], addr.addr[3], addr.addr[4], addr.addr[5]);
-					displayPrintf(DISPLAY_ROW_CONNECTION, "Discovering");
-				#endif
+				struct gecko_msg_system_get_bt_address_rsp_t * rsp;
+				bd_addr addr;
+				rsp = gecko_cmd_system_get_bt_address();
+				addr = rsp->address;
+				DISPLAY_PRINTF(DISPLAY_ROW_BTADDR, "%x:%x:%x:%x:%x:%x", addr.addr[0], addr.addr[1], addr.addr[2], addr.addr[3], addr.addr[4], addr.addr[5]);
+				DISPLAY_PRINTF(DISPLAY_ROW_CONNECTION, "Discovering");
 
 		    	LOG_INFO("EVT -> System Boot\n");
 				break;
@@ -465,7 +450,7 @@ int main(void)
 
 					// Stopping discovery of adveritising packets
 					gecko_cmd_le_gap_end_procedure();
-					displayPrintf(DISPLAY_ROW_BTADDR2, "%x:%x:%x:%x:%x:%x", recvAddr.addr[0], recvAddr.addr[1], recvAddr.addr[2], recvAddr.addr[3], recvAddr.addr[4], recvAddr.addr[5]);
+					DISPLAY_PRINTF(DISPLAY_ROW_BTADDR2, "%x:%x:%x:%x:%x:%x", recvAddr.addr[0], recvAddr.addr[1], recvAddr.addr[2], recvAddr.addr[3], recvAddr.addr[4], recvAddr.addr[5]);
 
 					// Connecting to desired server
 					gecko_cmd_le_gap_connect(recvAddr, recvAddrType, le_gap_phy_1m);
@@ -488,9 +473,7 @@ int main(void)
 				// Setting GATT state for Procedure Complete event
 				GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 
-				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-					displayPrintf(DISPLAY_ROW_CONNECTION, "Connected");
-				#endif
+				DISPLAY_PRINTF(DISPLAY_ROW_CONNECTION, "Connected");
 
 				LOG_INFO("EVT -> Connection Open\n");
 				break;
@@ -500,10 +483,8 @@ int main(void)
 				// Storing passkey connection handle
 				passkey_connection = evt->data.evt_sm_confirm_passkey.connection;
 
-				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-					displayPrintf(DISPLAY_ROW_PASSKEY, "Passkey: %d", evt->data.evt_sm_passkey_display.passkey);
-					displayPrintf(DISPLAY_ROW_ACTION, "Confirm with PB0");
-				#endif
+				DISPLAY_PRINTF(DISPLAY_ROW_PASSKEY, "Passkey: %d", evt->data.evt_sm_passkey_display.passkey);
+				DISPLAY_PRINTF(DISPLAY_ROW_ACTION, "Confirm with PB0");
 
 		    	break;
 
@@ -517,16 +498,12 @@ int main(void)
 
 				GATT_state = GATT_WAITING_FOR_SERVICE_DISCOVERY;
 
-				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-					displayPrintf(DISPLAY_ROW_CONNECTION, "Bonded");
-				#endif
+				DISPLAY_PRINTF(DISPLAY_ROW_CONNECTION, "Bonded");
 				break;
 
 
 			case gecko_evt_sm_bonding_failed_id:
-				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-					displayPrintf(DISPLAY_ROW_CONNECTION, "Bonding Failed");
-				#endif
+				DISPLAY_PRINTF(DISPLAY_ROW_CONNECTION, "Bonding Failed");
 				break;
 
 
@@ -580,12 +557,10 @@ int main(void)
 					tempServerByte++;
 					tempServer = gattUint32ToFloat(tempServerByte);
 
-					#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-						displayPrintf(DISPLAY_ROW_TEMPVALUE, "%.2f", tempServer);
-					#endif
+					DISPLAY_PRINTF(DISPLAY_ROW_TEMPVALUE, "%.2f", tempServer);
 				}
 
-				else if(evt->data.evt_gatt_characteristic.characteristic == gattdb_button_state)
+				if(evt->data.evt_gatt_characteristic.characteristic == gattdb_button_state)
 				{
 					// Getting button data and converting it in required value
 					uint8_t *button_press_byte = evt->data.evt_gatt_characteristic_value.value.data;
@@ -596,17 +571,13 @@ int main(void)
 					// Button released state
 					if(button_press_value == 0x00)
 					{
-						#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-							displayPrintf(DISPLAY_ROW_ACTION, "Button Released");
-						#endif
+						DISPLAY_PRINTF(DISPLAY_ROW_ACTION, "Button Released");
 					}
 
 					// Button pressed state
 					else if(button_press_value == 0x01)
 					{
-						#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-							displayPrintf(DISPLAY_ROW_ACTION, "Button Pressed");
-						#endif
+						DISPLAY_PRINTF(DISPLAY_ROW_ACTION, "Button Pressed");
 					}
 				}
 
@@ -676,7 +647,6 @@ int main(void)
 
 			case gecko_evt_system_external_signal_id:
 				if (((evt->data.evt_system_external_signal.extsignals) & PB0_FLAG) != 0) {
-
 					// when button is pressed first time for passkey confirmation
 					if(first_time_press == 1)
 					{
@@ -686,10 +656,8 @@ int main(void)
 						BTSTACK_CHECK_RESPONSE(gecko_cmd_sm_passkey_confirm(passkey_connection, 1));
 						LOG_INFO("PASSKEY CONFIRMED\n");
 
-						#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-							displayPrintf(DISPLAY_ROW_PASSKEY, " ");
-							displayPrintf(DISPLAY_ROW_ACTION, " ");
-						#endif
+						DISPLAY_PRINTF(DISPLAY_ROW_PASSKEY, " ");
+						DISPLAY_PRINTF(DISPLAY_ROW_ACTION, " ");
 					}
 				}
 				break;
@@ -705,12 +673,10 @@ int main(void)
 				// For reconnection, confirm passkey needs to be done again
 				first_time_press = 1;
 
-				#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-		    		displayPrintf(DISPLAY_ROW_CONNECTION, "Discovering");
-		    		displayPrintf(DISPLAY_ROW_BTADDR2, " ");
-		    		displayPrintf(DISPLAY_ROW_TEMPVALUE, " ");
-		    		displayPrintf(DISPLAY_ROW_ACTION, " ");
-				#endif
+				DISPLAY_PRINTF(DISPLAY_ROW_CONNECTION, "Discovering");
+				DISPLAY_PRINTF(DISPLAY_ROW_BTADDR2, " ");
+				DISPLAY_PRINTF(DISPLAY_ROW_TEMPVALUE, " ");
+				DISPLAY_PRINTF(DISPLAY_ROW_ACTION, " ");
 
 		    	LOG_INFO("EVT -> Connection Close\n\n");
 				break;

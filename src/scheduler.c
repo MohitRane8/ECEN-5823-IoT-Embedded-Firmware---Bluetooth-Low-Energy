@@ -149,10 +149,7 @@ void scheduler(void)
 				// Sending temperature data to BLE client
 				gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_temperature_measurement, 5, temp);
 
-
-#if ECEN5823_INCLUDE_DISPLAY_SUPPORT
-				displayPrintf(DISPLAY_ROW_TEMPVALUE, "%.2f", celtemp);
-#endif
+				DISPLAY_PRINTF(DISPLAY_ROW_TEMPVALUE, "%.2f", celtemp);
 
 				next_state = TEMP_SENSOR_POWER_OFF;
 			}
